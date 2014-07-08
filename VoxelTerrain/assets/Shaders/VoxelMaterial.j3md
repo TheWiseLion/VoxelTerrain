@@ -1,0 +1,48 @@
+MaterialDef VoxelMaterial {
+	MaterialParameters {
+        TextureArray colorMaps
+        //TextureArray normalMaps
+        //TextureArray specularMaps
+        //TextureArray parallaxMaps
+        //TextureArray noiseMaps
+        
+        Int colorIndex
+        //Int normalmap
+        //Int specularmap
+        //Int noisemap
+        //Int parallaxMaps
+        
+        //Float scalar
+        
+        //Float scalar2
+        //Float hl  //Highlight value
+        //Float des //Desaturation value
+        //Float ?rotator?
+        
+        //Color color
+        //Float colorTint
+        
+        //Float Shininess
+        //Float 
+    }
+
+    Technique {
+    	LightMode MultiPass
+        
+        VertexShader GLSL150:   Shaders/VoxelMaterial.vert
+        FragmentShader GLSL150: Shaders/VoxelMaterial.frag
+        
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            ViewMatrix
+            CameraPosition
+            WorldMatrix
+        }
+    	
+    }
+    
+  
+    
+}
