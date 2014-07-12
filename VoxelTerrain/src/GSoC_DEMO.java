@@ -32,6 +32,8 @@
 
 
 
+import idea.Chunk;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,6 +47,7 @@ import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
 import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
 import VoxelSystem.Hermite.HermiteDensityExtractor;
 import VoxelSystem.Hermite.HermiteExtractor;
+import VoxelSystem.MeshBuilding.DebugMesher;
 import VoxelSystem.Operators.CSGOperators;
 import VoxelSystem.SurfaceExtractors.DualContour;
 import VoxelSystem.VoxelMaterials.MaterialBuilder;
@@ -61,13 +64,13 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
-import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Matrix4f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.shape.Sphere.TextureMode;
@@ -150,49 +153,48 @@ public class GSoC_DEMO extends SimpleApplication {
     	BoundingBox bb = new BoundingBox(new Vector3f(-20, -20, -20),new Vector3f(20, 20, 20));
 		
     	//Make a sphere:
-    	SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 2f);
+//    	SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 4f);
     	//Set type to rock
-    	ss.setTypeVolume(new TypeVolume() {
-			@Override
-			public int getType(float x, float y, float z) {
-				if(x > 0){
-					return 0;
-				}else{
-					return 1;
-				}
-			}
-		});
+//    	ss.setSimpleType(0);
+//    	ss.setTypeVolume(new TypeVolume() {
+//			@Override
+//			public int getType(float x, float y, float z) {
+//				if(x > 2*y){
+//					return 0;
+//				}else{
+//					return 1;
+//				}
+//			}
+//		});
     	
     	//Make a box:
-		BoxVolume box = new BoxVolume(new Vector3f(0,0,0), 5, 5, 5);
-		
+    	Vector3f boxCenter = new Vector3f(0,2.5f,0);
+		BoxVolume box = new BoxVolume(boxCenter, 5, 5, 5);
+		BoxVolume box2 = new BoxVolume(new Vector3f(-2.5f,0,-2.5f), 5, 20, 5);
+    	
+		//Make a sphere
+		SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 4f);
+    	//Set type to rock
+    	ss.setSimpleType(0);
     	//Set type to sand
-		//box.setSimpleType(0);
-		box.setTypeVolume(new TypeVolume() {
-			@Override
-			public int getType(float x, float y, float z) {
-				if(x == 0 && y == 0){
-					return 0;
-				}else{
-					return 1;
-				}
-			}
-		});
+		box.setSimpleType(2);
+	
 		
 		//Boiler plate.....
-    	HermiteExtractor he1 = new HermiteDensityExtractor(ss);
-    	HermiteExtractor he2 = new HermiteDensityExtractor(box);
+    	HermiteExtractor sphereExtractor = new HermiteDensityExtractor(ss);
+    	HermiteExtractor boxExtractor = new HermiteDensityExtractor(box);
+    	HermiteExtractor boxExtractor2 = new HermiteDensityExtractor(box2);
     	
     	//Add the box and sphere together
-    	HermiteExtractor union = CSGOperators.union(true, he1,he2);
+    	HermiteExtractor paint = CSGOperators.difference((CSGOperators.union(true,sphereExtractor,boxExtractor)),boxExtractor2);
 		
-    	float res = 0.25f;
     	
-    	//Make a new box:
-    	HermiteDensityExtractor box2 = new HermiteDensityExtractor(new BoxVolume(new Vector3f(2.5f,10f,0), 4, 4, 4));
+    	
+    	float res = .25f;
+    	
     	
 //    	Subtract new box from sphere:
-    	HermiteExtractor finalVolume = he1;//CSGOperators.difference(union,box2);
+    	HermiteExtractor finalVolume = paint;//CSGOperators.difference(union,box2);
     	
     	//Set LOD:
     	VoxelObject vo = new VoxelObject(bb,finalVolume, res);//finalVolume,.25f);
@@ -204,7 +206,7 @@ public class GSoC_DEMO extends SimpleApplication {
     	for(int i=0;i<colorMesh.length;i++){
 			  rootNode.attachChild(colorMesh[i]);
 		}
-    	
+//    	
     	//Prepare debug data:
     	DualContour dc = new DualContour();
     	Material red = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -233,62 +235,34 @@ public class GSoC_DEMO extends SimpleApplication {
     	Map<Integer,Material> iToM= new HashMap<Integer,Material>();
     	iToM.put(0, orange);
     	iToM.put(1, blue);
+    	iToM.put(2, red);
     	
-    	wireMesh = vo.extractGeometry(typeToMaterial);
-    	for (Geometry g : wireMesh){
-    		g.setMaterial(green);
-    		g.getMaterial().getAdditionalRenderState().setWireframe(true);
-    		g.getMaterial().getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
-    	}
+//    	wireMesh = vo.extractGeometry(typeToMaterial);
+//    	for (Geometry g : wireMesh){
+//    		g.setMaterial(green);
+//    		g.getMaterial().getAdditionalRenderState().setWireframe(true);
+//    		g.getMaterial().getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+//    	}
     	
     	
-    	List<Vector3f> xp = new ArrayList<Vector3f>(), yp = new ArrayList<Vector3f>(), zp = new ArrayList<Vector3f>();
+//    	List<Vector3f> xp = new ArrayList<Vector3f>(), yp = new ArrayList<Vector3f>(), zp = new ArrayList<Vector3f>();
+    	
     	
     	//Extract Triangle Data (for debugging):
-//    	QuadData = DebugMesher.getQuadMesh(dc.extractQuads(finalVolume, bb, res,xp,yp,zp),iToM, green);
+//    	wireMesh = DebugMesher.getTriangleMesh(dc.extractSurface(finalVolume, bb, res, false),iToM, green);
+    	wireMesh = DebugMesher.getQuadMesh(dc.extractSurface(finalVolume, bb, res, true),iToM, green);
     	
-    	// Cyan Points
-//    	Mesh poi = new Mesh();
-//    	poi.setMode(Mode.Points);
-//    	poi.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(xp.toArray(new Vector3f[0])));
-//    	poi.updateBound();
-//    	poi.updateCounts();
-//    	poi.setPointSize(10f);
-//    	Geometry ge = new Geometry("",poi);
-//    	ge.setMaterial(teal);
-//    	rootNode.attachChild(ge);
-//    	ge.setCullHint(CullHint.Never);
+    	//Extract Quad Data (for debugging):
+    	QuadData = DebugMesher.getQuadMesh(dc.extractSurface(sphereExtractor, bb, res, true),iToM, green);
     	
-    	// Magenta Points
-//    	poi = new Mesh();
-//    	poi.setMode(Mode.Points);
-//    	poi.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(yp.toArray(new Vector3f[0])));
-//    	poi.updateBound();
-//    	poi.updateCounts();
-//    	poi.setPointSize(10f);
-//    	ge = new Geometry("",poi);
-//    	ge.setMaterial(magenta);
-//    	rootNode.attachChild(ge);
-//    	ge.setCullHint(CullHint.Never);
-    	
-    	// ...Pink Points?
-//    	poi = new Mesh();
-//    	poi.setMode(Mode.Points);
-//    	poi.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(zp.toArray(new Vector3f[0])));
-//    	poi.updateBound();
-//    	poi.updateCounts();
-//    	poi.setPointSize(10f);
-//    	ge = new Geometry("",poi);
-//    	ge.setMaterial(pink);
-//    	rootNode.attachChild(ge);
-//    	ge.setCullHint(CullHint.Never);
-    	
-//    	Geometry g = new Geometry("wireframe grid", new Cube( 1000, res) );
-//    	g.setMaterial(white);
-//    	g.setCullHint(CullHint.Never);
-//    	rootNode.attachChild(g);
-    	
-        flyCam.setMoveSpeed(10);
+//    	Chunk c = new Chunk(64,64,64);
+//    	c.extract(new Vector3f(-5f,-5f,-5f), .25f, he1);
+//    	c = c.downSample(); //has some edge cases...
+//    	
+//    	idea.DualContour idc = new idea.DualContour();
+//    	wireMesh = DebugMesher.getTriangleMesh(idc.extractSurface(c,new Vector3f(.25f,.5f,.25f)),iToM, green);
+        
+    	flyCam.setMoveSpeed(10);
         cam.setLocation(new Vector3f(0,0,0));
         
         //PHYSICS SETUP//

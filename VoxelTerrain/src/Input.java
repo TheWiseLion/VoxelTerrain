@@ -84,7 +84,7 @@ public class Input {
 	      
 	      if (name.equals("showQuads")) {
 	    	  if( keyPressed){
-//	    		 gd.changeQuads();
+	    		 gd.changeQuads();
 	    	  }
 	      }
 	      

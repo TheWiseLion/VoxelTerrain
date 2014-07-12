@@ -1,0 +1,66 @@
+ShaderNodeDefinitions{
+    ShaderNodeDefinition VoxelVertex{
+        Type : Vertex   
+        Shader GLSL100:       
+        Documentation{
+           This Node is responsible for computing vertex position in projection space.
+           
+           @input modelPosition the vertex position in model space (usually assigned with Attr.inPosition or Global.position)
+           @input worldViewProjectionMatrix
+           @input vec3 texCoord1 The vertex weights to be passed to the shader
+           @input vec3 texCoord2 The voxel type id's to be passed to the shader
+           @input vec3 normal the normal of the vertex
+           
+           @output vertex Position of the vertex in projection space.
+           @output vec3 vWeights Vetex weights
+           @output vec3 vTypes Vertex Types
+           @output vec3 normal The world space normal
+        }
+        
+        Input {                    
+            mat4 worldViewProjectionMatrix
+            
+            vec3 modelPosition
+        	vec3 normal //direct pass through
+        	vec3 vTypes //direct pass through
+        	vec3 vWeights //direct pass through
+        }
+        
+        Output {
+        	vec3 vertex
+        	vec3 normal //directly passed
+        	vec3 vTypes //directly passed
+        	vec3 vWeights //directly passed
+        }
+    }
+    
+    
+    ShaderNodeDefinition VoxelFragment{
+        Type : Fragment   
+        Shader GLSL100:       
+        Documentation{
+           This shader takes a normal, position, and a set of material types.
+           The shader outputs the correct texture color.
+           
+           @input 
+           //TODO: ShadowMap, ??? , ????
+           @input vertex Position of the vertex in projection space.
+           @input vec3 vWeights Vetex weights
+           @input vec3 vTypes Vertex Types
+           @input vec3 normal The world space normal
+        }
+        
+        Input {
+        	sampler2DArray diffuseMaterials
+        	//TODO: Specular, Normal, Parralax, Height
+        	vec3 vertex
+        	vec3 normal 
+        	vec3 vTypes 
+        	vec3 vWeights 
+        }
+        
+        Output {
+        	vec4 finalColor
+        }
+    }
+}

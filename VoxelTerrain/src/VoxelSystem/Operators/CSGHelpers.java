@@ -68,6 +68,7 @@ public class CSGHelpers {
 		boolean overWrite;
 		public UnionExtactor(HermiteExtractor d1, HermiteExtractor d2,boolean overWrite) {
 			super(d1, d2, true);
+			this.overWrite = overWrite;
 		}
 
 		@Override
@@ -100,20 +101,43 @@ public class CSGHelpers {
 			HermiteEdge e1 = this.he1.getEdge(p1, p2);
 			HermiteEdge e2 = this.he2.getEdge(p1, p2);
 			
-			if(overWrite){
-				if(e2 != null){
-					return e2;
-				}else{
+			//If both have an active edge pick the one that MAXIMIZES
+			//the volume
+			if(e1 != null && e2 != null){
+				float f = getLerp(p1,p2,e1.intersection);
+				float f1 = getLerp(p1,p2,e2.intersection);
+				if(f > f1){
 					return e1;
+				}else{
+					return e2;
 				}
 			}else{
-				if(e1 != null){
-					return e1;
+				if(overWrite){
+					if(e2 != null){
+						return e2;
+					}else{
+						return e1;
+					}
 				}else{
-					return e2;
+					if(e1 != null){
+						return e1;
+					}else{
+						return e2;
+					}
 				}
 			}
 		}
+		
+		/**
+		 * returns percent from v1 to v2
+		 */
+		private static float getLerp(Vector3f v1, Vector3f v2, Vector3f mp){
+			Vector3f l = v1.subtract(v2);
+			Vector3f n = v2.subtract(mp);
+			return 1.0f - (Math.abs(n.x+n.y+n.z)/Math.abs(l.x+l.y+l.z));
+		}
+		
+		
 		
 	}
 	
@@ -157,62 +181,128 @@ public class CSGHelpers {
 			HermiteEdge e1 = this.he1.getEdge(p1, p2);
 			HermiteEdge e2 = this.he2.getEdge(p1, p2);
 			
-			//We only care about THE SURFACE of he2
-			//So check if its a surface point.
-			HermitePoint hp1 = this.he2.getPoint(p1);
-			HermitePoint hp2 = this.he2.getPoint(p2);
-			
-			
-			HermitePoint hp3 = this.he1.getPoint(p1);
-			HermitePoint hp4 = this.he1.getPoint(p2);
-			
-			//Check early out. If he1 is empty so dont bother subtracting.
-			if(hp3.material == -1 && hp4.material == -1){ 
-				return null;
-			}else if(hp1.material ==  hp2.material){ 
-				if(hp1.material != -1){//is he2 surface? We only need to consider cases where its the surface.
-					return null;
-				}else{ //he2 is empty so nothing to subtract
-					return e1;
-				}
-			}
-			
-			HermitePoint actual1 = getPointIntersection(p1);
-			HermitePoint actual2 = getPointIntersection(p2);
-			
-			if(actual1.material == actual2.material){
-				return null;
-			}else if(actual1.material == -1 || actual2.material == -1){
-				
-				
-				/**
-				 * The interesting case:
-				 * "intersection normals in B  may only override the data in A  if the resulting volume data represents a smaller non-air volume"
-				 * "This is the case if the intersection in B  lies closer to the non-air material in A  than the corresponding intersection in A"
-				 */
-				//How do we know which is closer to the surface?
-				//look at where "inside" and "outside" are.
+			if(e2 != null){
 				if(e1 == null){
 					return e2;
 				}
 				
+				HermitePoint actual1 = this.he1.getPoint(p1);
+				HermitePoint actual2 = this.he1.getPoint(p2);
+				Vector3f p;
 				if(actual1.material == -1){
-					//Get point closer to p2 (less volume)
-					return getClosest(p1,e1,e2);
-				}else if(actual2.material == -1){
-					//Get point closer to p2 (less volume)
-					return getClosest(p2,e1,e2);
+					p = p2;
 				}else{
-					throw new RuntimeException("??");
+					p = p1;
 				}
-				
+				return getClosest(p,e1,e2);
+//				return e2;
 			}else{
 				return e1;
 			}
+			
+			//We only care about THE SURFACE of he2
+			//So check if its a surface point.
+//			HermitePoint hp1 = this.he2.getPoint(p1);
+//			HermitePoint hp2 = this.he2.getPoint(p2);
+//			
+//			
+//			HermitePoint hp3 = this.he1.getPoint(p1);
+//			HermitePoint hp4 = this.he1.getPoint(p2);
+//			
+//			//Check early out. If he1 is empty so dont bother subtracting.
+//			if(hp3.material == -1 && hp4.material == -1){ 
+//				return null;
+//			}else if(hp1.material ==  hp2.material){ 
+//				if(hp1.material != -1){//is he2 surface? We only need to consider cases where its the surface.
+//					return null;
+//				}else{ //he2 is empty so nothing to subtract
+//					return e1;
+//				}
+//			}
+//			
+//			HermitePoint actual1 = getPointIntersection(p1);
+//			HermitePoint actual2 = getPointIntersection(p2);
+//			
+//			if(actual1.material == actual2.material){
+//				return null;
+//			}else if(actual1.material == -1 || actual2.material == -1){
+//				
+//				
+//				/**
+//				 * The interesting case:
+//				 * "intersection normals in B  may only override the data in A  if the resulting volume data represents a smaller non-air volume"
+//				 * "This is the case if the intersection in B  lies closer to the non-air material in A  than the corresponding intersection in A"
+//				 */
+//				//How do we know which is closer to the surface?
+//				//look at where "inside" and "outside" are.
+//				if(e1 == null){
+//					return e2;
+//				}
+//				
+//				if(actual1.material == -1){
+//					//Get point closer to p2 (less volume)
+//					return getClosest(p1,e1,e2);
+//				}else if(actual2.material == -1){
+//					//Get point closer to p2 (less volume)
+//					return getClosest(p2,e1,e2);
+//				}else{
+//					throw new RuntimeException("??");
+//				}
+//				
+//			}else{
+//				return e1;
+//			}
 			
 		}
 		
 	}
 	
-	
+	public static class PaintOperator extends OperatorBase{
+		boolean overWrite;
+		public PaintOperator(HermiteExtractor d1, HermiteExtractor d2) {
+			super(d1, d2, true);
+		}
+
+		@Override
+		public BoundingBox getBoundingBox() {
+			return this.bb1;
+		}
+
+		@Override
+		public HermitePoint getPointIntersection(Vector3f p) {
+			HermitePoint hp1 = this.he1.getPoint(p);
+			HermitePoint hp2 = this.he2.getPoint(p);
+			
+			if(hp1.material != -1 && hp2.material != -1){
+					return hp2;
+				
+			}else{
+				return hp1;
+			}
+			
+		}
+
+		@Override
+		public HermiteEdge getEdgeIntersection(Vector3f p1, Vector3f p2) {
+			HermiteEdge e1 = this.he1.getEdge(p1, p2);
+			HermiteEdge e2 = this.he2.getEdge(p1, p2);
+			
+			//If there is a material change:
+			int new1 = getPointIntersection(p1).material;
+			int new2 = getPointIntersection(p2).material;
+			
+			int original1 = this.he1.getPoint(p1).material;
+			int original2 = this.he1.getPoint(p2).material;
+			
+			//if its a material-material boundary:
+			if(new1 != -1 && new2 != -1 && new2!=new1){
+				if(new1 != original1 || new2 != original2){ // there is a new material change
+					return e2;
+				}
+			}
+			
+			return e1;
+		}
+		
+	}
 }

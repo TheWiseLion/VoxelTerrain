@@ -1,0 +1,42 @@
+MaterialDef VoxelMaterial {
+    MaterialParameters {
+        TextureArray materialColors
+    }
+    
+    Technique {
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        VertexShaderNodes {
+            //TODO: Basic Shadow Map
+            
+            
+            ShaderNode VoxelShaderNode {
+                Definition : VoxelVertex : MatDefs/ShaderNodes/VoxelShaderNode.j3sn
+                
+                InputMappings {
+                    worldViewProjectionMatrix = WorldParam.WorldViewProjectionMatrix
+                    modelPosition = Global.position.xyz
+                    //TODO input maps
+                }
+                
+                OutputMappings {
+                    Global.position = vertex
+                }
+            }
+        }
+
+        FragmentShaderNodes {
+            
+            ShaderNode VoxelShaderNode {
+                Definition : VoxelFragment : MatDefs/ShaderNodes/VoxelShaderNode.j3sn
+                
+                InputMappings {
+                    
+                }
+            }
+        }
+
+    }
+}

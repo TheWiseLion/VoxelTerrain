@@ -6,20 +6,47 @@ import com.jme3.math.Vector3f;
 
 public final class VoxelSystemTables {
 	private static final float Isolevel = 0;
-	//Intersection Table:
+	//Intersection Table: (axis aligned)
 	public static final int iTable[] = { //ith edge -> i*2,i*2+1 indexs
 		0, 1, //0  
-		1,2, //1
-		2, 3, //2
-		3,0, //3
+		1, 2, //1
+		3, 2, //2
+		0, 3, //3
 		4, 5, //4
-		5,6, //5
-		6,7, //6
-		7, 4, //7
+		5, 6, //5
+		7, 6, //6
+		4, 7, //7
 		0, 4, //8
 		1, 5, //9
 		2, 6, //10
-		3,7 //11
+		3, 7 //11
+	};
+	
+	public static final int cTable[] = { //dx,dy,dz from zero for each edge
+		0, 0, 0, //0  
+		1, 0, 0, //1
+		1, 1, 0, //2
+		0, 1, 0, //3
+		0, 0, 1, //4
+		1, 0, 1, //5
+		1, 1, 1, //6
+		0, 1, 1, //7
+	};
+	
+	public static final int aTable[] = { //axis table
+		0, //x (edge 0)  
+		1, //y (edge 1)
+		0, //x (edge 2)
+		1, //y (edge 3)
+		0, //x (edge 4)
+		1, //y (edge 5)
+		0, //x (edge 6)
+		1, //y (edge 7)
+		2, //z (edge 8)
+		2, //z (edge 9)
+		2, //z (edge 10)
+		2, //z (edge 11)
+		
 	};
 	
 	public static final int edgeTable[] = { 0x0, 0x109, 0x203, 0x30a, 0x406,
@@ -147,7 +174,7 @@ public final class VoxelSystemTables {
 		return (p);
 	}
 	
-	public static int[] edgeInfoToCubePoints(int edgeInfo){
+	public static int[] getCubeEdges(int edgeInfo){
 		int numIntersections = Integer.bitCount(edgeInfo);
 		int [] cubePoints = new int[numIntersections*2];
 		int off = 0;
@@ -192,11 +219,44 @@ public final class VoxelSystemTables {
 		return axis;
 	}
 	
+	
+	
+	/**
+	 * 0 -> x axis
+	 * 1 -> y axis
+	 * 2 -> z axis
+	 * @param edgeInfo
+	 * @return
+	 */
+	public static int edgeToAxis(int i) {
+		if (i == 0 || i == 4 || i == 2 || i == 6) {
+			return 0; // x
+		} else if (i == 1 || i == 3 || i == 7 || i == 5) {
+			return 1; // y
+		} else {
+			return 2; // z
+		}
+	}
+	
+	/**
+	 * edge index to normal of axis
+	 * @return normal of axis x-> <1,0,0>, y-> <0,1,0>
+	 */
+	public static Vector3f edgeToNormal(int i) {
+		if (i == 0 || i == 4 || i == 2 || i == 6) {
+			return new Vector3f(1,0,0); // x
+		} else if (i == 1 || i == 3 || i == 7 || i == 5) {
+			return new Vector3f(0,1,0); // y
+		} else {
+			return new Vector3f(0,0,1); // z
+		}
+	}
+	
 	/**
 	 * Returns indexes for surface contour (as opposed to sub-surface contours)
 	 */
 	public static int[] surfaceEdges(HermiteCube hc){
-		int [] s = edgeInfoToCubePoints(hc.edgeInfo);
+		int [] s = getCubeEdges(hc.edgeInfo);
 		int [] r = null;
 		if(s.length > 0){
 			int count = 0;
@@ -223,7 +283,7 @@ public final class VoxelSystemTables {
 	 * Returns indexes for surface contour (as opposed to sub-surface contours)
 	 */
 	public static int[] subSurfaceEdges(HermiteCube hc){
-		int [] s = edgeInfoToCubePoints(hc.edgeInfo);
+		int [] s = getCubeEdges(hc.edgeInfo);
 		int [] r = null;
 		if(s.length > 0){
 			int count = 0;

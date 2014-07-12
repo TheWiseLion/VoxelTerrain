@@ -52,88 +52,88 @@ public abstract class OperatorBase extends HermiteBase{
 	public HermiteEdge getEdge(Vector3f p1, Vector3f p2) {
 		//This is the tricky case...
 		
-		if(intersect){
-			boolean b1 = inVolume(p1,intersection);
-			boolean b2 = inVolume(p2,intersection);
-			//p1 and p2 are both in intersection
-			if(b1 && b2){
+//		if(intersect){
+//			boolean b1 = inVolume(p1,intersection);
+//			boolean b2 = inVolume(p2,intersection);
+//			//p1 and p2 are both in intersection
+//			if(b1 && b2){
 				return getEdgeIntersection(p1,p2);
-			}else if(b1 != b2){//[!!CASE UNDEFINED!!] p1 is in intersection and p2 isn't [!!CASE UNDEFINED!!]
-				HermitePoint hp1 = getPoint(p1);
-				HermitePoint hp2 = getPoint(p2);
-				
-				if(hp1.material != hp2.material){
-					throw new RuntimeException("Case undefined");
-//					Vector3f e = VoxelSystemTables.getIntersection(p1, p2, hp1.density,hp2.density);
-//					Vector3f n = new Vector3f();
-//					HermiteEdge he = new HermiteEdge(e, n);
-//					return he;
-				}else{
-					return null;
-				}
-				//				throw new RuntimeException("Case undefined");
-			}
-				
-		}
-		
-		if(union){
-			boolean b1 = inVolume(p1,bb1);
-			boolean b2 = inVolume(p2,bb1);
-			
-			boolean b3 = inVolume(p1,bb2);
-			boolean b4 = inVolume(p2,bb2);
-			
-			if(b1 && b2){ //p1 and p2 are both in one bounds
-				return he1.getEdge(p1,p2);
-			}else if(b3 && b4){//p1 and p2 are both in one bounds
-				return he2.getEdge(p1,p2);
-			}else if(b1 && b4 || b2 && b3){//[!!CASE UNDEFINED!!] p1 is in one bound and p2 is the other [!!CASE UNDEFINED!!]
-				throw new RuntimeException("Case undefined");
-			}else{ //p1 and p2 are both in no bounds
-				return null;
-			}
-		}else if(only1){
-			boolean b1 = inVolume(p1,bb1);
-			boolean b2 = inVolume(p2,bb1);
-			if(b1 && b2){ //p1 and p2 are both in one bounds
-				return he1.getEdge(p1,p2);
-			}
-		}else if(only2){
-			boolean b3 = inVolume(p1,bb2);
-			boolean b4 = inVolume(p2,bb2);
-			if(b3 && b4){//p1 and p2 are both in one bounds
-				return he2.getEdge(p1,p2);
-			}
-		}
-		
-		return null;
+//			}else if(b1 != b2){//[!!CASE UNDEFINED!!] p1 is in intersection and p2 isn't [!!CASE UNDEFINED!!]
+//				HermitePoint hp1 = getPoint(p1);
+//				HermitePoint hp2 = getPoint(p2);
+//				
+//				if(hp1.material != hp2.material){
+//					throw new RuntimeException("Case undefined");
+////					Vector3f e = VoxelSystemTables.getIntersection(p1, p2, hp1.density,hp2.density);
+////					Vector3f n = new Vector3f();
+////					HermiteEdge he = new HermiteEdge(e, n);
+////					return he;
+//				}else{
+//					return null;
+//				}
+//				//				throw new RuntimeException("Case undefined");
+//			}
+//				
+//		}
+//		
+//		if(union){
+//			boolean b1 = inVolume(p1,bb1);
+//			boolean b2 = inVolume(p2,bb1);
+//			
+//			boolean b3 = inVolume(p1,bb2);
+//			boolean b4 = inVolume(p2,bb2);
+//			
+//			if(b1 && b2){ //p1 and p2 are both in one bounds
+//				return he1.getEdge(p1,p2);
+//			}else if(b3 && b4){//p1 and p2 are both in one bounds
+//				return he2.getEdge(p1,p2);
+//			}else if(b1 && b4 || b2 && b3){//[!!CASE UNDEFINED!!] p1 is in one bound and p2 is the other [!!CASE UNDEFINED!!]
+//				throw new RuntimeException("Case undefined");
+//			}else{ //p1 and p2 are both in no bounds
+//				return null;
+//			}
+//		}else if(only1){
+//			boolean b1 = inVolume(p1,bb1);
+//			boolean b2 = inVolume(p2,bb1);
+//			if(b1 && b2){ //p1 and p2 are both in one bounds
+//				return he1.getEdge(p1,p2);
+//			}
+//		}else if(only2){
+//			boolean b3 = inVolume(p1,bb2);
+//			boolean b4 = inVolume(p2,bb2);
+//			if(b3 && b4){//p1 and p2 are both in one bounds
+//				return he2.getEdge(p1,p2);
+//			}
+//		}
+//		
+//		return null;
 	}
 
 	@Override
 	public HermitePoint getPoint(Vector3f p) {
 		//if in intersection:
-		if(intersect && inVolume(p,intersection)){
+//		if(intersect && inVolume(p,intersection)){
 			return getPointIntersection(p);
-		}
+//		}
 		
-		if(union){
-			if(inVolume(p,bb1)){//else if in either d1 or d2
-				return he1.getPoint(p);
-			}else if (inVolume(p, bb2)){//else if in either d1 or d2
-				return he2.getPoint(p);
-			}
-		}else if(only1){
-			if(inVolume(p,bb1)){//else if in either d1 or d2
-				return he1.getPoint(p);
-			}
-		}else if(only2){
-			if (inVolume(p, bb2)){//else if in either d1 or d2
-				return he2.getPoint(p);
-			}
-		}
+//		if(union){
+//			if(inVolume(p,bb1)){//else if in either d1 or d2
+//				return he1.getPoint(p);
+//			}else if (inVolume(p, bb2)){//else if in either d1 or d2
+//				return he2.getPoint(p);
+//			}
+//		}else if(only1){
+//			if(inVolume(p,bb1)){//else if in either d1 or d2
+//				return he1.getPoint(p);
+//			}
+//		}else if(only2){
+//			if (inVolume(p, bb2)){//else if in either d1 or d2
+//				return he2.getPoint(p);
+//			}
+//		}
 		
 		//else set to air
-		return new HermitePoint(HermitePoint.AIR);
+//		return new HermitePoint(HermitePoint.AIR);
 	}
 
 	protected boolean inVolume(Vector3f p,BoundingBox bb){

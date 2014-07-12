@@ -1,6 +1,7 @@
 package VoxelSystem.SurfaceExtractors;
+import idea.HermiteGrid;
+
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import VoxelSystem.Hermite.HermiteCube;
@@ -8,99 +9,13 @@ import VoxelSystem.Hermite.HermiteExtractor;
 import VoxelSystem.MeshBuilding.SurfacePoint;
 
 import com.jme3.bounding.BoundingBox;
-import com.jme3.math.Triangle;
 import com.jme3.math.Vector3f;
 
 public class DualContour implements SurfaceExtractor{
-	private static final int MAX_ITERATIONS = 1000;
-//	private static int sumIterations = 0;
-//	private static int numberOfIterations = 0;
-//	private static float FORCE_TRESHOLD = 0.00001f;
-	private static float forceRatio = 0.75f;
-
-
-	/**
-	 * Computes the vertex for the cube, from Hermite data. Uses Leonardo
-	 * Augusto Schmitz's excellent method, with exact normal at intersection
-	 * points, to reduce complexity.
-	 * 
-	 */
-	public static Vector3f[] surfaceContour(HermiteCube hc, Vector3f[] cP, float threshold) {
-		threshold *= threshold;
 		
-//		int [] surfaceIndexes = new int[hc.intersections.length];
-//		for (int i=0; i<surfaceIndexes.length; ++i) { surfaceIndexes[i] = i; }
-		
-		// Center the particle on the masspoint.
-//		Vector3f masspoint = new Vector3f();
-//		for (int i : surfaceIndexes) {
-//			masspoint.addLocal(hc.intersections[i]);
-//		}
-//		masspoint.divideLocal(surfaceIndexes.length);
-//		Vector3f particlePosition = new Vector3f(masspoint);
-
-		Vector3f masspoint = new Vector3f();
-		for (Vector3f v : hc.intersections) {
-			masspoint.addLocal(v);
-		}
-		masspoint.divideLocal(hc.intersections.length);
-		Vector3f particlePosition = new Vector3f(masspoint);
-		
-//		int [] subSurfaceIndexes = VoxelSystemTables.subSurfaceEdges(hc);
-//		Vector3f typepoint = new Vector3f();
-//		for (int i : subSurfaceIndexes) {
-//			typepoint.addLocal(hc.intersections[i]);
-//		}
-//		typepoint.divideLocal(subSurfaceIndexes.length);
-		
-		Vector3f typepoint = new Vector3f();
-		for (Vector3f v : hc.intersections) {
-			typepoint.addLocal(v);
-		}
-		typepoint.divideLocal(hc.intersections.length);
-		//particlePosition.set(typepoint);
-		
-//		// Start iterating:
-		Vector3f force = new Vector3f();
-		int iteration;
-	
-		for (iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-			force.set(0, 0, 0);
-
-			// For each intersection point:
-			for (int i = 0; i < hc.intersections.length; i++) {
-				Vector3f planePoint = hc.intersections[i];
-				Vector3f planeNormal = hc.normals[i];// normal;//
-				
-				// Compute distance vector to plane.
-				// To do that, compute the normal.dot(AX).
-				float d = planeNormal.dot(particlePosition.subtract(planePoint));
-
-				force.addLocal(planeNormal.mult(-d));
-			}
-			// Average the force over all the intersection points, and multiply
-			// with a ratio and some damping to avoid instabilities.
-			float damping = 1f - ((float) iteration) / MAX_ITERATIONS;
-
-			force.multLocal(forceRatio * damping / hc.intersections.length);
-
-			// Apply the force.
-			particlePosition.addLocal(force);
-
-			// If the force was almost null, break.
-			if (force.lengthSquared() < threshold) {
-				break;
-			}
-		}
-		
-		return new Vector3f[]{ particlePosition, typepoint };
-	}
-	
-	private void generateTriangles( Vector3f[][][][] cubePoints, HermiteCube[][][] cubes, HermiteExtractor he, List<SurfacePoint> trianglesOut ){
+	private void generateTriangles( SurfacePoint[][][] cubePoints, HermiteCube[][][] cubes, List<SurfacePoint> trianglesOut ){
 		//TODO: Build Adjacency List for fun and profit.
 		//Are quads guaranteed to be planar?
-		LinkedList<Triangle> isogons = new LinkedList<Triangle>();
-		LinkedList<Triangle> matgons = new LinkedList<Triangle>();
 		
 		for(int x=0; x<cubePoints[0].length-1; x++){
 			for(int z=0; z<cubePoints[0][0].length-1; z++){
@@ -109,7 +24,7 @@ public class DualContour implements SurfaceExtractor{
 				
 				int eI = hc.edgeInfo;
 				//4 cubes per edge
-				Vector3f[] v1 = cubePoints[0][x][z], v2, v3, v4;
+				SurfacePoint v1 = cubePoints[0][x][z], v2, v3, v4;
 				
 				//if edge 5
 				if((eI & (1<<5)) != 0){
@@ -118,18 +33,14 @@ public class DualContour implements SurfaceExtractor{
 					v4 = cubePoints[0][x][z+1];
 					
 					if(hc.materials[6] == -1){
-						isogons.push(new Triangle(v1[0], v2[0], v3[0]));
-						isogons.push(new Triangle(v1[0], v3[0], v4[0]));
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,true,hc.materials[5]);
 					}else if(hc.materials[5] == -1){
-						isogons.push(new Triangle(v1[0], v3[0], v2[0]));
-						isogons.push(new Triangle(v1[0], v4[0], v3[0]));
-					}else{ // Wrapping does not matter for material quads.
-//						matgons.push(new Triangle(v1[1], v2[1], v3[1]));
-//						matgons.push(new Triangle(v1[1], v3[1], v4[1]));
-						matgons.push(new Triangle(v1[0], v2[0], v3[0]));
-						matgons.push(new Triangle(v1[0], v3[0], v4[0]));
-						
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,false,hc.materials[6]);
+					}else{
+						// Sub-Surface Quad. Check if this is marked for generation
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, true,2);
 					}
+					
 				}
 				
 				//if edge 6
@@ -139,16 +50,14 @@ public class DualContour implements SurfaceExtractor{
 					v4 = cubePoints[0][x][z+1];
 					
 					if(hc.materials[7] == -1){
-						isogons.push(new Triangle(v1[0], v2[0], v3[0]));
-						isogons.push(new Triangle(v1[0], v3[0], v4[0]));
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,true,hc.materials[6]);
+//						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, true,hc.materials[6]);
 					}else if(hc.materials[6] == -1){
-						isogons.push(new Triangle(v1[0], v3[0], v2[0]));
-						isogons.push(new Triangle(v1[0], v4[0], v3[0]));
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,false,hc.materials[7]);
+//						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, false,hc.materials[7]);
 					}else{ // Wrapping does not matter for material quads.
-//						matgons.push(new Triangle(v1[1], v2[1], v3[1]));
-//						matgons.push(new Triangle(v1[1], v3[1], v4[1]));
-						matgons.push(new Triangle(v1[0], v2[0], v3[0]));
-						matgons.push(new Triangle(v1[0], v3[0], v4[0]));
+						// Sub-Surface Quad. Check if this is marked for generation
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, true,2);
 					}
 				}
 				
@@ -159,36 +68,74 @@ public class DualContour implements SurfaceExtractor{
 					v4 = cubePoints[0][x+1][z];
 					
 					if(hc.materials[6] == -1){
-						isogons.push(new Triangle(v1[0], v2[0], v3[0]));
-						isogons.push(new Triangle(v1[0], v3[0], v4[0]));
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,true,hc.materials[2]);
+//						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, true,hc.materials[2]);
 					}else if(hc.materials[2] == -1){
-						isogons.push(new Triangle(v1[0], v3[0], v2[0]));
-						isogons.push(new Triangle(v1[0], v4[0], v3[0]));
-					}else{ // Wrapping does not matter for material quads.
-//						matgons.push(new Triangle(v1[1], v2[1], v3[1]));
-//						matgons.push(new Triangle(v1[1], v3[1], v4[1]));
-						matgons.push(new Triangle(v1[0], v2[0], v3[0]));
-						matgons.push(new Triangle(v1[0], v3[0], v4[0]));
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4,trianglesOut,false,hc.materials[6]);
+//						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, false,hc.materials[6]);
+					}else{ 
+						// Sub-Surface Quad. Check if this is marked for generation
+						QuadExtractor.windingQuadToTriangle(v1,v2,v3,v4, trianglesOut, true,2);
 					}
 				}
 			}
 		}
+
 		
-		for (Triangle t : isogons){
-			trianglesOut.add(new SurfacePoint(t.get1(), 0));
-			trianglesOut.add(new SurfacePoint(t.get2(), 0));
-			trianglesOut.add(new SurfacePoint(t.get3(), 0));
+	}
+	
+	
+	private void generateQuads( SurfacePoint[][][] cubePoints, HermiteCube[][][] cubes, List<SurfacePoint> quadsOut ){
+		//TODO: Build Adjacency List for fun and profit.
+		//Are quads guaranteed to be planar?
+		
+		for(int x=0; x<cubePoints[0].length-1; x++){
+			for(int z=0; z<cubePoints[0][0].length-1; z++){
+				HermiteCube hc = cubes[0][x][z];
+				if( hc == null ){ continue; }
+				
+				int eI = hc.edgeInfo;
+				//4 cubes per edge
+				SurfacePoint v1 = cubePoints[0][x][z], v2, v3, v4;
+				
+				//if edge 5
+				if((eI & (1<<5)) != 0){
+					v2 = cubePoints[0][x+1][z];
+					v3 = cubePoints[0][x+1][z+1];
+					v4 = cubePoints[0][x][z+1];
+					QuadExtractor.windingQuadToQuad(v1,v2,v3,v4,quadsOut,true);
+					
+				}
+				
+				//if edge 6
+				if((eI & (1<<6)) != 0){
+					v2 = cubePoints[1][x][z];
+					v3 = cubePoints[1][x][z+1];
+					v4 = cubePoints[0][x][z+1];
+					
+					QuadExtractor.windingQuadToQuad(v1,v2,v3,v4,quadsOut,true);
+				}
+				
+				//if edge 10
+				if((eI & (1<<10)) != 0){
+					v2 = cubePoints[1][x][z];
+					v3 = cubePoints[1][x+1][z];
+					v4 = cubePoints[0][x+1][z];
+					QuadExtractor.windingQuadToQuad(v1,v2,v3,v4,quadsOut,true);
+				}
+			}
 		}
-		for (Triangle t : matgons){
-			trianglesOut.add(new SurfacePoint(t.get1(), 2));
-			trianglesOut.add(new SurfacePoint(t.get2(), 2));
-			trianglesOut.add(new SurfacePoint(t.get3(), 2));
-		}
+
 		
 	}
 
 	@Override
 	public List<SurfacePoint> extractSurface(HermiteExtractor hermiteData, BoundingBox bb, float resolution) {
+		return extractSurface( hermiteData,  bb,  resolution,  false);
+	}
+	
+	
+	public List<SurfacePoint> extractSurface(HermiteExtractor hermiteData, BoundingBox bb, float resolution, boolean quads) {
 		Vector3f min = bb.getMin(new Vector3f());
 		Vector3f max = bb.getMax(new Vector3f());
 		float dx = (max.x-min.x);
@@ -211,14 +158,15 @@ public class DualContour implements SurfaceExtractor{
 		new Vector3f(),new Vector3f(),new Vector3f(),new Vector3f()};
 		
 		//Should Be a way around storing all this:
-		Vector3f vertexPoints[][][][] = new Vector3f[2][stepsX+2][stepsY+2][2];//[y],x,z
+		SurfacePoint vertexPoints[][][] = new SurfacePoint[2][stepsX+2][stepsY+2];//[y],x,z
 		HermiteCube cube[][][] = new HermiteCube[2][stepsX+2][stepsY+2];
 		int yOff = 0;
 		
 		List<SurfacePoint> triangles = new ArrayList<SurfacePoint>(); 
-		List<Triangle> isogons = new LinkedList<Triangle>(); 
-		List<Triangle> matgons = new LinkedList<Triangle>();
-		
+		BoundingBox cellBox = new BoundingBox();
+		cellBox.setXExtent(resolution/2f);
+		cellBox.setYExtent(resolution/2f);
+		cellBox.setZExtent(resolution/2f);
 		
 		for(int y=-1;y<=stepsY;y++){
 			//Set y values:
@@ -238,37 +186,18 @@ public class DualContour implements SurfaceExtractor{
 					
 					//Get normals
 					if(hc.edgeInfo>0){
-//						int [] subSurf = VoxelSystemTables.subSurfaceEdges(hc);
-//						for(int i: subSurf){
-//
-//							System.out.println("new Vector3f("+hc.normals[i].x+"f,"+hc.normals[i].y+"f,"+hc.normals[i].z+"f),");
-//						}
-						
+						cellBox.setCenter(cP[0].add(cP[6]).mult(.5f));
 						
 						//Compute Cube Center:
-						Vector3f centers[] = surfaceContour(hc,cP, diag);
+						Vector3f center = ExtractorUtils.surfaceContour(cP, hc.intersections, hc.normals, cellBox, diag);
 						
-						Vector3f center = cP[0].add(cP[1]).add(cP[2]).add(cP[3]).add(cP[4]).add(cP[5]).add(cP[6]).add(cP[7]);
-						center = center.divide(8);
 						
-//						for(Vector3f v : hc.intersections){
-//							if(v.distance(center) > .25f  * Math.sqrt(2)){
-//								System.out.println("But why2 "+v.distance(center)+" "+ v + " "+ center);
-//							}
-//						}
-						
-						if(centers[0].distance(center) > .25f * Math.sqrt(2)){
-							System.out.println("But why " + centers[0].distance(center) + " " + centers[0] + " " + center);
-							centers = surfaceContour(hc,cP, diag);
-						}
-						vertexPoints[yOff][x+1][z+1][0] = centers[0];
-						vertexPoints[yOff][x+1][z+1][1] = centers[1];
+						vertexPoints[yOff][x+1][z+1] = new SurfacePoint(center, ExtractorUtils.getNearestType(center, cP, hc.materials));
 						cube[yOff][x+1][z+1] = hc;
 					}else{
 						//vertexPoints[yOff][x+1][z+1] = null;
 						cube[yOff][x+1][z+1] = null;
-						vertexPoints[yOff][x+1][z+1][0] = null;
-						vertexPoints[yOff][x+1][z+1][1] = null;
+						vertexPoints[yOff][x+1][z+1]= null;
 					}
 				
 				}
@@ -279,9 +208,13 @@ public class DualContour implements SurfaceExtractor{
 			if(yOff==2){
 				yOff=1;
 				//Generate Quads
+				if(quads){
+					generateQuads(vertexPoints, cube, triangles);
+				}else{
+					generateTriangles(vertexPoints,cube,triangles);
+				}
 				
-				generateTriangles(vertexPoints,cube,hermiteData,triangles);
-				Vector3f[][][] storeV=vertexPoints[0];
+				SurfacePoint[][] storeV=vertexPoints[0];
 				HermiteCube[][] storeC=cube[0];
 				
 				
@@ -295,11 +228,32 @@ public class DualContour implements SurfaceExtractor{
 			
 		}
 		
-		
-		//second pass, slice isogons
-		
-		
 		return triangles;
+	}
+
+	@Override
+	public List<SurfacePoint> extractSurface(HermiteGrid hg, float resolution) {
+		HermiteCube cube[][][] = new HermiteCube[2][hg.getHieght()+2][hg.getWidth()+2];
+		for(int y =  0; y < hg.getHieght(); y++){
+			for(int x = 0; x < hg.getWidth(); x++){
+				for(int z = 0; z < hg.getDepth(); z++){
+					
+				}
+			}
+			
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		return null;
 	}
 	
 }

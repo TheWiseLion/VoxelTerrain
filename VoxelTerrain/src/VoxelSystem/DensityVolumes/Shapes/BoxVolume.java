@@ -66,27 +66,27 @@ public class BoxVolume extends VolumeShape{
 		Vector3f max =bb.getMax(new Vector3f());
 		
 		Vector3f v = new Vector3f(x,y,z);
-		if(!bb.contains(v)){//outside box
-			//Get nearest point on box:
-			if (v.x < min.x){ 
-				v.x = min.x;
-			}else if(v.x>max.x){ 
-				v.x = max.x;
-			}
-			
-			if (v.y < min.y){ 
-				v.y = min.y;
-			}else if(v.y>max.y){ 
-				v.y = max.y;
-			}
-			
-			if (v.z < min.z){ 
-				v.z = min.z;
-			}else if(v.z>max.z){
-				v.z = max.z;
-			}
-			return v.subtract(x,y,z).normalize();
-		}else{
+//		if(!bb.contains(v)){//outside box
+//			//Get nearest point on box:
+//			if (v.x < min.x){ 
+//				v.x = min.x;
+//			}else if(v.x>max.x){ 
+//				v.x = max.x;
+//			}
+//			
+//			if (v.y < min.y){ 
+//				v.y = min.y;
+//			}else if(v.y>max.y){ 
+//				v.y = max.y;
+//			}
+//			
+//			if (v.z < min.z){ 
+//				v.z = min.z;
+//			}else if(v.z>max.z){
+//				v.z = max.z;
+//			}
+//			return v.subtract(x,y,z).normalize();
+//		}else{
 			//Get distance to closest face
 			Vector3f normal = new Vector3f(-1,0,0);
 			float d = x-min.x;
@@ -116,7 +116,7 @@ public class BoxVolume extends VolumeShape{
 			
 			
 			return normal;
-		}
+//		}
 		
 	}
 

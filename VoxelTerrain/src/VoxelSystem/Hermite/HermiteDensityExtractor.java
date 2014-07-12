@@ -38,9 +38,15 @@ public class HermiteDensityExtractor implements HermiteExtractor{
 			//if (material2 == -1) d2 = 0;
 			
 			
-			Vector3f v = HermiteUtils.VertexInterp(p1, p2, d1,d2);
-			Vector3f n = dv.getFieldDirection(v.x, v.y, v.z);
-			//if (material1 != -1 && material2 != -1) n.set(0, 0, 1);
+			Vector3f v = VoxelSystemTables.getIntersection(p1, p2, d1,d2);
+			Vector3f n;
+//			if (material1 != -1 && material2 != -1){ //Sub-surface normal
+				//Normal is the axis in which the transition occurred on.
+//				n = p1.subtract(p2).normalize();
+				
+//			}else{ //Surface normal
+				n = dv.getFieldDirection(v.x, v.y, v.z);
+//			}
 			return new HermiteEdge(v, n);
 		}
 	}
@@ -61,17 +67,14 @@ public class HermiteDensityExtractor implements HermiteExtractor{
 	
 	private float getD(Vector3f p){
 		float d = dv.getDensity(p.x, p.y, p.z);
-		if(d==0){
-			d=.003f;
-		}
 		return d;
 	}
 	
-	@Override
+//	@Override
 	public HermitePoint getPoint(Vector3f p) {
 		float d1 = dv.getDensity(p.x, p.y, p.z);
 		int material;
-		if(d1<0){
+		if(d1 < 0){
 			material =  -1;
 		}else{
 			material = dv.getType(p.x, p.y, p.z);
@@ -125,9 +128,17 @@ public class HermiteDensityExtractor implements HermiteExtractor{
 			
 			Vector3f intersection = VoxelSystemTables.getIntersection(corner1, corner2, cubeVals[v1], cubeVals[v2]);
 			intersections[count] = intersection;
-			normals[count] = dv.getFieldDirection(intersection.x, intersection.y, intersection.z);
-			if (materials[v1] != -1 && materials[v2] != -1) normals[count].set(0, 0, 1);
 			
+//			if (materials[v1] != -1 && materials[v2] != -1){ //Sub-surface normal
+//				Normal is the axis in which the transition occurred on.
+//				normals[count] = VoxelSystemTables.edgeToNormal(i);
+//				normals[count] = new Vector3f(.8085255f,.58825f,-.0153f).normalize();
+//				normals[count] = new Vector3f(-.968734f, 0.242661f, -.34460396f).normalize();//VoxelSystemTables.edgeToNormal(i);
+				
+//			}else{ //Surface normal
+				normals[count] = dv.getFieldDirection(intersection.x, intersection.y, intersection.z);
+//			}
+//			normals[count] = VoxelSystemTables.edgeToNormal(i);
 			count++;
 		}
 		

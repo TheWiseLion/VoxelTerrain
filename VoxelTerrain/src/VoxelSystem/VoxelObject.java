@@ -13,6 +13,7 @@ import VoxelSystem.SurfaceExtractors.SurfaceExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 
@@ -82,6 +83,9 @@ public class VoxelObject {
 			}else{ //No material set. Use default material
 				g.setMaterial(errorMaterial);
 			}
+//			g.setCullHint(CullHint.Never);
+			g.getMaterial().getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+			
 			geometry.add(g);
 		}
 		return geometry.toArray(new Geometry[0]);

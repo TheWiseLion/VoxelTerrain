@@ -16,6 +16,7 @@ public class DiscreteDensityVolume implements DiscreteVolume{
 	private final double gridM; //grid multiplier
 	public final int width,hieght,depth;
 	private final int zOffSet;
+	
 	public DiscreteDensityVolume(Vector3f position,int width,int height,int depth,float gridScale){
 		grid = new short[width*height*depth];
 		type = new int[width*height*depth];
