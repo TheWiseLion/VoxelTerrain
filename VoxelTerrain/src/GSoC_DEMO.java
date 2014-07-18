@@ -32,8 +32,6 @@
 
 
 
-import idea.Chunk;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,13 +39,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import VoxelSystem.PagingVoxelObject;
 import VoxelSystem.VoxelObject;
-import VoxelSystem.DensityVolumes.TypeVolume;
 import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
 import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Hermite.HermiteDensityExtractor;
-import VoxelSystem.Hermite.HermiteExtractor;
-import VoxelSystem.MeshBuilding.DebugMesher;
+import VoxelSystem.Hermite.VoxelDensityExtractor;
+import VoxelSystem.Hermite.VoxelExtractor;
 import VoxelSystem.Operators.CSGOperators;
 import VoxelSystem.SurfaceExtractors.DualContour;
 import VoxelSystem.VoxelMaterials.MaterialBuilder;
@@ -65,8 +62,6 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Matrix4f;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
@@ -116,7 +111,7 @@ public class GSoC_DEMO extends SimpleApplication {
     
     private Geometry[] colorMesh, wireMesh;
     private Geometry[] QuadData;
-    
+    PagingVoxelObject world;
     
     int showMesh = -1;
     
@@ -151,61 +146,61 @@ public class GSoC_DEMO extends SimpleApplication {
     	
     	//Set up voxel object bounds:
     	BoundingBox bb = new BoundingBox(new Vector3f(-20, -20, -20),new Vector3f(20, 20, 20));
-		
-    	//Make a sphere:
-//    	SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 4f);
-    	//Set type to rock
-//    	ss.setSimpleType(0);
-//    	ss.setTypeVolume(new TypeVolume() {
-//			@Override
-//			public int getType(float x, float y, float z) {
-//				if(x > 2*y){
-//					return 0;
-//				}else{
-//					return 1;
-//				}
-//			}
-//		});
     	
     	//Make a box:
-    	Vector3f boxCenter = new Vector3f(0,2.5f,0);
+    	Vector3f boxCenter = new Vector3f(1.24234f,2.2342f,-1.4234f);
 		BoxVolume box = new BoxVolume(boxCenter, 5, 5, 5);
 		BoxVolume box2 = new BoxVolume(new Vector3f(-2.5f,0,-2.5f), 5, 20, 5);
     	
 		//Make a sphere
 		SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 4f);
     	//Set type to rock
-    	ss.setSimpleType(0);
+    	ss.setSimpleType(2);
     	//Set type to sand
 		box.setSimpleType(2);
 	
 		
 		//Boiler plate.....
-    	HermiteExtractor sphereExtractor = new HermiteDensityExtractor(ss);
-    	HermiteExtractor boxExtractor = new HermiteDensityExtractor(box);
-    	HermiteExtractor boxExtractor2 = new HermiteDensityExtractor(box2);
+    	VoxelExtractor sphereExtractor = new VoxelDensityExtractor(ss);
+    	VoxelExtractor boxExtractor = new VoxelDensityExtractor(box);
+    	VoxelExtractor boxExtractor2 = new VoxelDensityExtractor(box2);
+    	VoxelExtractor sphereExtractor2 = new VoxelDensityExtractor(new SphereVolume(new Vector3f(2f, 0, 0), 4f));
     	
+    	SphereVolume sv = new SphereVolume(new Vector3f(2f, 2f, 2), 5f);
+    	sv.setSimpleType(2);
+    	VoxelExtractor sphereExtractor3 = new VoxelDensityExtractor(sv);
     	//Add the box and sphere together
-    	HermiteExtractor paint = CSGOperators.difference((CSGOperators.union(true,sphereExtractor,boxExtractor)),boxExtractor2);
-		
+    	VoxelExtractor finalVolume = CSGOperators.union(false,CSGOperators.difference(CSGOperators.paint(sphereExtractor,boxExtractor),boxExtractor2),boxExtractor);
+//    	paint =  CSGOperators.difference(paint, sphereExtractor2);
     	
-    	
-    	float res = .25f;
+    	float res = 1f;
     	
     	
 //    	Subtract new box from sphere:
-    	HermiteExtractor finalVolume = paint;//CSGOperators.difference(union,box2);
     	
-    	//Set LOD:
-    	VoxelObject vo = new VoxelObject(bb,finalVolume, res);//finalVolume,.25f);
-        
-      
+//    	VoxelGrid vg = finalVolume.extract(new Vector3f(-20,-20,-20), (int)(40f/res),(int)(40f/res),(int)(40f/res), res);
+//    	vg.extract(CSGOperators.difference(vg, sphereExtractor3));
+    	
+    	world = new PagingVoxelObject(.25f, typeToMaterial);
+    	
+    	world.set(finalVolume);
+    	
+    	world.update(rootNode);
     	//Extract Mesh Data:
-    	colorMesh = vo.extractGeometry(typeToMaterial);
     	
-    	for(int i=0;i<colorMesh.length;i++){
-			  rootNode.attachChild(colorMesh[i]);
-		}
+//    	VoxelNode vn = new VoxelNode(new Vector3f(-20,-20,-20),(int)(40f/.25f),(int)(40f/.25f),(int)(40f/.25f),.25f);
+//    	vn.extract(sphereExtractor);
+//    	finalVolume = CSGOperators.union(false, vn,sphereExtractor);
+    	
+//    	VoxelObject vo = new VoxelObject(bb,vg, res);//finalVolume,.25f);
+//    	init = System.currentTimeMillis();
+//    	colorMesh = vo.extractGeometry(typeToMaterial);
+//    	System.out.println((System.currentTimeMillis()-init));
+//    	
+//    	for(int i=0;i<colorMesh.length;i++){
+//			  rootNode.attachChild(colorMesh[i]);
+//		}
+    	
 //    	
     	//Prepare debug data:
     	DualContour dc = new DualContour();
@@ -236,31 +231,7 @@ public class GSoC_DEMO extends SimpleApplication {
     	iToM.put(0, orange);
     	iToM.put(1, blue);
     	iToM.put(2, red);
-    	
-//    	wireMesh = vo.extractGeometry(typeToMaterial);
-//    	for (Geometry g : wireMesh){
-//    		g.setMaterial(green);
-//    		g.getMaterial().getAdditionalRenderState().setWireframe(true);
-//    		g.getMaterial().getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
-//    	}
-    	
-    	
-//    	List<Vector3f> xp = new ArrayList<Vector3f>(), yp = new ArrayList<Vector3f>(), zp = new ArrayList<Vector3f>();
-    	
-    	
-    	//Extract Triangle Data (for debugging):
-//    	wireMesh = DebugMesher.getTriangleMesh(dc.extractSurface(finalVolume, bb, res, false),iToM, green);
-    	wireMesh = DebugMesher.getQuadMesh(dc.extractSurface(finalVolume, bb, res, true),iToM, green);
-    	
-    	//Extract Quad Data (for debugging):
-    	QuadData = DebugMesher.getQuadMesh(dc.extractSurface(sphereExtractor, bb, res, true),iToM, green);
-    	
-//    	Chunk c = new Chunk(64,64,64);
-//    	c.extract(new Vector3f(-5f,-5f,-5f), .25f, he1);
-//    	c = c.downSample(); //has some edge cases...
-//    	
-//    	idea.DualContour idc = new idea.DualContour();
-//    	wireMesh = DebugMesher.getTriangleMesh(idc.extractSurface(c,new Vector3f(.25f,.5f,.25f)),iToM, green);
+  
         
     	flyCam.setMoveSpeed(10);
         cam.setLocation(new Vector3f(0,0,0));
@@ -298,7 +269,6 @@ public class GSoC_DEMO extends SimpleApplication {
         
         ScreenshotAppState screenShotState = new ScreenshotAppState();
         this.stateManager.attach(screenShotState);
-//        initKeys();
     }
     
 
@@ -310,6 +280,30 @@ public class GSoC_DEMO extends SimpleApplication {
         direction.setText(""+cam.getDirection());
         selectedMaterialN.setText("Selected Material: "+selectedMaterial);
         counter+=tpf;
+        
+        if(input.addDown){
+        	BoxVolume bv = new BoxVolume(cam.getLocation(),2f,2f,2f);
+        	bv.setSimpleType(1);
+        	long init = System.currentTimeMillis();
+//        	world.set(new VoxelDensityExtractor(bv));
+        	world.add(new VoxelDensityExtractor(bv));
+        	System.out.println((System.currentTimeMillis()-init));
+//        	input.addDown = false;
+        	world.update(rootNode);
+        }
+        
+        if(input.removeDown){
+        	BoxVolume bv = new BoxVolume(cam.getLocation(),1f,1f,1f);
+        	bv.setSimpleType(1);
+//        	long init = System.currentTimeMillis();
+//        	world.set(new VoxelDensityExtractor(bv));
+        	world.remove(new VoxelDensityExtractor(bv));
+//        	System.out.println((System.currentTimeMillis()-init));
+//        	input.addDown = false;
+        	world.update(rootNode);
+        	input.removeDown= false;
+        }
+        
         updateBalls();
      }
  

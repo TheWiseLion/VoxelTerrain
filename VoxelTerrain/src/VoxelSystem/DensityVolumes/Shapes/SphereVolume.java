@@ -14,7 +14,7 @@ public class SphereVolume extends VolumeShape{
 		radius = Math.abs(radius);
 		min.subtractLocal(radius, radius, radius);
 		max.subtractLocal(-radius, -radius, -radius);
-		bb = null;//new BoundingBox(min,max);
+		bb = new BoundingBox(min,max);
 		this.radius = radius;
 		this.center = center;
 	}

@@ -33,19 +33,19 @@ public final class VoxelSystemTables {
 		0, 1, 1, //7
 	};
 	
-	public static final int aTable[] = { //axis table
-		0, //x (edge 0)  
-		1, //y (edge 1)
-		0, //x (edge 2)
-		1, //y (edge 3)
-		0, //x (edge 4)
-		1, //y (edge 5)
-		0, //x (edge 6)
-		1, //y (edge 7)
-		2, //z (edge 8)
-		2, //z (edge 9)
-		2, //z (edge 10)
-		2, //z (edge 11)
+	public static final AXIS aTable[] = { //axis table
+		AXIS.X, //x (edge AXIS.PX)  
+		AXIS.Y, //y (edge AXIS.PY)
+		AXIS.X, //x (edge AXIS.PZ)
+		AXIS.Y, //y (edge 3)
+		AXIS.X, //x (edge 4)
+		AXIS.Y, //y (edge 5)
+		AXIS.X, //x (edge 6)
+		AXIS.Y, //y (edge 7)
+		AXIS.Z, //z (edge 8)
+		AXIS.Z, //z (edge 9)
+		AXIS.Z, //z (edge AXIS.PYAXIS.PX)
+		AXIS.Z, //z (edge AXIS.PYAXIS.PY)
 		
 	};
 	
@@ -79,6 +79,22 @@ public final class VoxelSystemTables {
 			0x190, 0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
 			0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0 
 	};
+	
+	
+	/***
+	 * Defines:
+	 * positive x, negative x,
+	 * positive y, negative y,
+	 * positive z, negative z
+	 * @author 0xFFFF
+	 *
+	 */
+	public enum AXIS {
+		X,
+		Y,
+		Z,
+	}
+
 	
 	/**
 	 * Get the cube index by inspecting the density
@@ -159,8 +175,8 @@ public final class VoxelSystemTables {
 			return (p1);
 		if (Math.abs(valp2) == 0)
 			return (p2);
-//		if (Math.abs(valp1 - valp2) <= 0)
-//			return (p1);
+		if (Math.abs(valp1 - valp2) <= 0)
+			return (p1);
 		
 		float v1 = Math.abs(valp1);
 	    float v2 = Math.abs(valp2);
@@ -198,20 +214,20 @@ public final class VoxelSystemTables {
 	 * @param edgeInfo
 	 * @return
 	 */
-	public static int[] edgeInfoToAxis(int edgeInfo){
+	public static AXIS[] edgeInfoToAxis(int edgeInfo){
 		int numIntersections = Integer.bitCount(edgeInfo);
-		int [] axis = new int[numIntersections];
+		AXIS [] axis = new AXIS[numIntersections];
 		int off = 0;
 		for (int i = 0; i < 12; i++){ // 12 edges
 			if ((edgeInfo & (1 << i)) == 0){
 				continue;
 			}
 			if(i==0 || i==4 || i== 2 || i==6){
-				axis[off] = 0; //x 
+				axis[off] = AXIS.X; //x 
 			}else if(i== 1 || i ==3 || i==7 || i==5){
-				axis[off] = 1; //y 
+				axis[off] = AXIS.Y; //y 
 			}else{
-				axis[off] = 2; //z
+				axis[off] = AXIS.Z; //z
 			}
 			
 			off++;
@@ -228,13 +244,13 @@ public final class VoxelSystemTables {
 	 * @param edgeInfo
 	 * @return
 	 */
-	public static int edgeToAxis(int i) {
+	public static AXIS edgeToAxis(int i) {
 		if (i == 0 || i == 4 || i == 2 || i == 6) {
-			return 0; // x
+			return AXIS.X; // x
 		} else if (i == 1 || i == 3 || i == 7 || i == 5) {
-			return 1; // y
+			return AXIS.Y; // y
 		} else {
-			return 2; // z
+			return AXIS.Z; // z
 		}
 	}
 	

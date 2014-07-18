@@ -1,4 +1,4 @@
-package VoxelSystem.SurfaceExtractors;
+package VoxelSystem.VoxelStorage;
 
 import com.jme3.math.Vector3f;
 

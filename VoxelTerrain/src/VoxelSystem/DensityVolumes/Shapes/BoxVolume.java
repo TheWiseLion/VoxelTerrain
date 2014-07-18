@@ -13,6 +13,8 @@ public class BoxVolume extends VolumeShape{
 		Vector3f max = new Vector3f(center);
 		min.subtractLocal(width/2.0f, height/2.0f, length/2.0f);
 		max.subtractLocal(-width/2.0f, -height/2.0f, -length/2.0f);
+		
+		
 		bb = new BoundingBox(min,max);
 		extents = new Vector3f(width,height,length);
 		this.center = center;
@@ -25,11 +27,12 @@ public class BoxVolume extends VolumeShape{
 		Vector3f max =bb.getMax(new Vector3f());
 		
 		Vector3f v = new Vector3f(x,y,z);
-		if(!bb.contains(v)){//outside box
+		float val = -1;
+		if(!VolumeShape.contains(bb, v)){//outside box
 			//Get nearest point on box:
 			if (v.x < min.x){ 
 				v.x = min.x;
-			}else if(v.x>max.x){ 
+			}else if(v.x > max.x){ 
 				v.x = max.x;
 			}
 			
@@ -44,17 +47,18 @@ public class BoxVolume extends VolumeShape{
 			}else if(v.z>max.z){
 				v.z = max.z;
 			}
-			return -v.subtract(x,y,z).length();
+			val = -v.subtract(x,y,z).length();
 		}else{
 			//Get distance to closest face
-			float d =Math.min(x-min.x,max.x-x);
-			 d =Math.min(y-min.y,max.y-y);
-			 d =Math.min(z-min.z,max.z-z);
-			 return d;
+			float d = Math.min(x-min.x,max.x-x);
+			 d = Math.min(d,Math.min(y-min.y,max.y-y));
+			 d = Math.min(d,Math.min(z-min.z,max.z-z));
+			 val = d;
 		}
 		
-	   //The difference to the closest point is the density
 		
+	   //The difference to the closest point is the density
+		return val;
 	}
 	
 	
@@ -122,7 +126,7 @@ public class BoxVolume extends VolumeShape{
 
 	@Override
 	public BoundingBox getEffectiveVolume() {
-		return null;
+		return bb;
 	}
 
 	@Override

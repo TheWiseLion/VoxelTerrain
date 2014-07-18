@@ -57,7 +57,9 @@ public class BasicMesher {
 		Vector3f v3 = sp3.point;
 		
 		
-
+		if(v1 == null || v2 == null || v3 == null){
+			return ;
+		}
 		
 		int [] triangleData = new int[3];
 		Vector3f normal = computeNormal(v1,v2,v3);

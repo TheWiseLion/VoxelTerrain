@@ -1,5 +1,9 @@
 package VoxelSystem.DensityVolumes.Shapes;
 
+import com.jme3.bounding.BoundingBox;
+import com.jme3.math.FastMath;
+import com.jme3.math.Vector3f;
+
 import VoxelSystem.DensityVolumes.DensityVolume;
 import VoxelSystem.DensityVolumes.TypeVolume;
 
@@ -39,6 +43,14 @@ public abstract class VolumeShape implements DensityVolume{
 				return voxelType;
 			}
 		};
+	}
+	
+
+	public static boolean contains(BoundingBox bb, Vector3f point) {
+		Vector3f center = bb.getCenter();
+		return FastMath.abs(center.x - point.x) <= bb.getXExtent()
+				&& FastMath.abs(center.y - point.y) <= bb.getYExtent()
+				&& FastMath.abs(center.z - point.z) <= bb.getZExtent();
 	}
 	
 }
