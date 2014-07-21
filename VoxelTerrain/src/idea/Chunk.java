@@ -244,11 +244,28 @@ public class Chunk extends ExtractorBase implements VoxelGrid{
 	
 	/***
 	 * Other implementations may want to override this.
-	 * But edges may exist on the boundaries of grids.
-	 * for now this is just defaultly saved as air. 
+	 * but edges may exist on the boundaries of grids
+	 * this current implementaion throws this edge case 
+	 * information away.
 	 */
-	protected int getEdgeType(int x, int y, int z){
-		return -1;
+	protected int getEdgeCaseType(int x, int y, int z){
+		//TODO: generic version?
+		if(x == -1){
+			return getType(x+1,y,z);
+		}else if(y == -1){
+			return getType(x,y+1,z);
+		}else if(z == -1){
+			return getType(x,y,z+1);
+		}else if( x == width){
+			return getType(x-1,y,z);
+		}else if(y == hieght){
+			return getType(x,y-1,z);
+		}else if(z == depth){
+			return getType(x,y,z-1);
+		}else{
+			throw new RuntimeException("Out of bounds");
+		}
+		
 	}
 	
 	///////////////////Getters//////////////////////
@@ -273,9 +290,8 @@ public class Chunk extends ExtractorBase implements VoxelGrid{
 	
 	@Override
 	public int getType(int x, int y, int z) {
-		if(x<0 || y < 0 || z < 0 
-				|| x == width || y == width || z == width){
-			return getEdgeType(x,y,z);
+		if(x<0 || y < 0 || z < 0 || x == width || y == width || z == width){
+			return getEdgeCaseType(x,y,z);
 		}
 		
 		return types[x][y][z];

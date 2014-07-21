@@ -113,7 +113,7 @@ public class DiscreteDensityVolume implements DiscreteVolume{
 	 *  -sobel filter
 	 *  http://www.volume-gfx.com/volume-rendering/density-source/discrete-grid/ 
 	 */
-	public Vector3f getFieldDirection(float x, float y, float z) {
+	public Vector3f getSurfaceNormal(float x, float y, float z) {
 		float d = gridScale; 
 
         double nx = trilinear(x + d, y, z) - trilinear(x - d, y, z);

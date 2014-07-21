@@ -19,23 +19,17 @@ public interface DensityVolume extends TypeVolume{
 
 	/**
 	 * Retrieves the field direction at a particular point in this volume. Field
-	 * direction can be used to define surface normals, potentially predict
-	 * collisions, etc..
+	 * direction can be used to define surface normals,
 	 */
-	public Vector3f getFieldDirection(float x, float y, float z);
+	public Vector3f getSurfaceNormal(float x, float y, float z);
 	
 	/***
-	 * The bounding range where this volume has positive density.
-	 * if null this volume has a potentially infinite range 
+	 * The bounding volume which defintes a region where the isosurface may lay.
+	 * Isosurface may lie directly on or within the bounding volume.
+	 * If infinite then null is returned.
 	 */
 	public BoundingBox getEffectiveVolume();
 	
-	/***
-	 * Determintes whether this volume implements
-	 * @link{DiscreteVolume}
-	 */
-	public boolean isDiscrete();
-	
-
+	//public boolean containsIntersection(Vector3f p1, Vector3f p2)
 	
 }

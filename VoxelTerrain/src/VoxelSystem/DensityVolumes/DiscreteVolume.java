@@ -7,5 +7,6 @@ public interface DiscreteVolume extends DensityVolume{
 	public void setDensity(float x, float y, float z,float d);
 	public void setType(float x, float y, float z, int t);
 	
+	
 	//public float getResolution
 }

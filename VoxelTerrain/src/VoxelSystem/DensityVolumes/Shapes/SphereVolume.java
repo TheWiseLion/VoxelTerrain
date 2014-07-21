@@ -26,7 +26,7 @@ public class SphereVolume extends VolumeShape{
 	}
 
 	@Override
-	public Vector3f getFieldDirection(float x, float y, float z) {
+	public Vector3f getSurfaceNormal(float x, float y, float z) {
 		return center.subtract(x,y, z).normalizeLocal();
 	}
 
@@ -35,9 +35,5 @@ public class SphereVolume extends VolumeShape{
 		return bb;
 	}
 
-	@Override
-	public boolean isDiscrete() {
-		return false;
-	}
 
 }

@@ -65,7 +65,7 @@ public class BoxVolume extends VolumeShape{
 	
 	
 	@Override
-	public Vector3f getFieldDirection(float x, float y, float z) {
+	public Vector3f getSurfaceNormal(float x, float y, float z) {
 		Vector3f min =bb.getMin(new Vector3f());
 		Vector3f max =bb.getMax(new Vector3f());
 		
@@ -129,9 +129,5 @@ public class BoxVolume extends VolumeShape{
 		return bb;
 	}
 
-	@Override
-	public boolean isDiscrete() {
-		return false;
-	}
 
 }

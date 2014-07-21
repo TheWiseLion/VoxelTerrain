@@ -70,11 +70,11 @@ public abstract class ExtractorBase implements VoxelExtractor{
 				for (int z = minZ; z < maxZ; z++) {
 					float dz = z * res;
 					
-//					if(x == 16 && y == 22 && z == 18){
-//						System.out.println("Entry");
-//					}else if(x == 17 && y == 22 && z == 18){
-//						System.out.println("Entry");
-//					}
+					if(x == 20 && y == 18 && z == 20){
+						System.out.println("Entry");
+					}else if(x == 20 && y == 19 && z == 20){
+						System.out.println("Entry");
+					}
 					qPoint1.set(p.x+dx, p.y+dy, p.z+dz);
 					
 					//If 'out' on more than 2 axii's then skip this iteration

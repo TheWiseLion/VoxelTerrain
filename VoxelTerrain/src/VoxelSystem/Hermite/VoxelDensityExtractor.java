@@ -42,7 +42,7 @@ public class VoxelDensityExtractor extends ExtractorBase{
 		
 		if(he.t1 != he.t2){ //edge must exist
 			Vector3f v = VoxelSystemTables.getIntersection(p1, p2, d0, d1);
-			he.normal = dv.getFieldDirection(v.x, v.y, v.z);
+			he.normal = dv.getSurfaceNormal(v.x, v.y, v.z);
 			he.intersection = getLerp(p1,p2,v); //TODO: do it less stupid please...
 		}
 		

@@ -32,6 +32,9 @@
 
 
 
+import idea.Chunk;
+import idea.VoxelGrid;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -178,28 +181,28 @@ public class GSoC_DEMO extends SimpleApplication {
     	
 //    	Subtract new box from sphere:
     	
-//    	VoxelGrid vg = finalVolume.extract(new Vector3f(-20,-20,-20), (int)(40f/res),(int)(40f/res),(int)(40f/res), res);
-//    	vg.extract(CSGOperators.difference(vg, sphereExtractor3));
+    	VoxelGrid vg = new Chunk(new Vector3f(0,0,0), (int)(5f/res),(int)(5f/res),(int)(5f/res), res);//finalVolume.extract(new Vector3f(0,0,0), (int)(5f/res),(int)(5f/res),(int)(5f/res), res);
+    	vg.extract(boxExtractor);
     	
-    	world = new PagingVoxelObject(.25f, typeToMaterial);
-    	
-    	world.set(finalVolume);
-    	
-    	world.update(rootNode);
+//    	world = new PagingVoxelObject(.25f, typeToMaterial);
+//    	
+//    	world.set(finalVolume);
+//    	
+//    	world.update(rootNode);
     	//Extract Mesh Data:
     	
 //    	VoxelNode vn = new VoxelNode(new Vector3f(-20,-20,-20),(int)(40f/.25f),(int)(40f/.25f),(int)(40f/.25f),.25f);
 //    	vn.extract(sphereExtractor);
 //    	finalVolume = CSGOperators.union(false, vn,sphereExtractor);
     	
-//    	VoxelObject vo = new VoxelObject(bb,vg, res);//finalVolume,.25f);
+    	VoxelObject vo = new VoxelObject(bb,vg, res);//finalVolume,.25f);
 //    	init = System.currentTimeMillis();
-//    	colorMesh = vo.extractGeometry(typeToMaterial);
+    	colorMesh = vo.extractGeometry(typeToMaterial);
 //    	System.out.println((System.currentTimeMillis()-init));
 //    	
-//    	for(int i=0;i<colorMesh.length;i++){
-//			  rootNode.attachChild(colorMesh[i]);
-//		}
+    	for(int i=0;i<colorMesh.length;i++){
+			  rootNode.attachChild(colorMesh[i]);
+		}
     	
 //    	
     	//Prepare debug data:
