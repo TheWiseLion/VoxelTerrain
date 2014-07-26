@@ -3,12 +3,13 @@ package VoxelSystem.DensityVolumes.Shapes;
 import VoxelSystem.VoxelNoise.SimplexNoise;
 
 import com.jme3.bounding.BoundingBox;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 
 public class NoiseShape extends VolumeShape{
-	int dimX = 40;
-	int dimY = 20;
-	int dimZ = 40;
+	int dimX = 100;
+	int dimY = 50;
+	int dimZ = 100;
 	float d;
 	public NoiseShape(float res){
 		this.d = res;
@@ -19,7 +20,7 @@ public class NoiseShape extends VolumeShape{
 	public int getType(float x, float y, float z){
 		if(!isOutside(x, y, z)){
 			if( x > 5){
-				return 2;
+				return 3;
 			}else{
 				return 1;
 			}
@@ -36,9 +37,6 @@ public class NoiseShape extends VolumeShape{
 //		float r  =  10f;
 //		float rInnter = r/2.0f;
 //		float len = (float) Math.sqrt(x*x + y*y );
-		if(y < -5){
-			return 1;
-		}
 //		if(len > r){
 //			return -1;
 //		}else if(len < rInnter){
@@ -47,18 +45,28 @@ public class NoiseShape extends VolumeShape{
 //			return 0;
 //		}
 		
-		int octaves = 5;
+		int octaves = 3;
 		float d = 0;
-		float base = .5f;
-		float multiplier = 2f;
-		float baseFreq = 10f;
-		float FreqMultiplier = 2f;
 		
-		//"Mountain" octave: Low Frequency high octave
+		float amplitude = 1.70f;
+		
+		
+		float baseFreq = 12f;
+		float FreqMultiplier = 4f;
+		
+		//"Mountain"  Low Frequency high octave
 		for(int i = 0; i< octaves;i++){
-			float localFreq = baseFreq + baseFreq*FreqMultiplier*i;
-			d += SimplexNoise.noise(x/localFreq,z/localFreq,y/localFreq) * (base+multiplier*i);
+			float localFreq = baseFreq + FreqMultiplier*i;
+			d += SimplexNoise.noise(x/localFreq,z/localFreq,y/localFreq) * amplitude * (i+1);
 		}
+		
+		float localFreq = 100f;
+		amplitude = 25f;
+		d += SimplexNoise.noise(x/localFreq,z/localFreq) * amplitude ;
+		d -= FastMath.abs(x)/10;
+		d -= FastMath.abs(z)/10;
+		return d-y;
+		
 		
 		//"Cave Octave"
 		
@@ -89,11 +97,7 @@ public class NoiseShape extends VolumeShape{
 //		if(d < 0){
 //			return -1;
 //		}else 
-		if(d > y){
-			return d-y;	
-		}else{
-			return d-y;
-		}
+	
 //		float yIso = (float) (5*Math.sin(x/5) + 5*Math.sin(z/5));
 //		
 //		return (float) (yIso-y);
@@ -102,12 +106,13 @@ public class NoiseShape extends VolumeShape{
 	@Override
 	public Vector3f getSurfaceNormal(float x, float y, float z) {
 		//Bilinear:
-		double nx = getDensity(x + d, y, z) - getDensity(x - d, y, z);
-	    double ny = getDensity(x, y + d, z) - getDensity(x, y - d, z);
-	    double nz = getDensity(x, y, z + d) - getDensity(x, y, z - d);
-	 
-	    Vector3f normal = new Vector3f((float)-nx, (float)-ny, (float)-nz);
-	    return normal.normalizeLocal();
+//		double nx = getDensity(x + d, y, z) - getDensity(x - d, y, z);
+//	    double ny = getDensity(x, y + d, z) - getDensity(x, y - d, z);
+//	    double nz = getDensity(x, y, z + d) - getDensity(x, y, z - d);
+//	 
+//	    Vector3f normal = new Vector3f((float)-nx, (float)-ny, (float)-nz);
+//	    return normal.normalizeLocal();
+		return new Vector3f(0,0,0);
 	}
 
 	@Override

@@ -46,8 +46,6 @@ import VoxelSystem.VoxelData.VoxelDensityExtractor;
 import VoxelSystem.VoxelData.VoxelExtractor;
 import VoxelSystem.VoxelMaterials.VoxelType;
 import VoxelSystem.VoxelObjects.PagingVoxelObject;
-import VoxelSystem.VoxelObjects.Physics;
-import VoxelSystem.VoxelObjects.Physics.HitData;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.ScreenshotAppState;
@@ -63,6 +61,8 @@ import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.LightScatteringFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -76,6 +76,7 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.SkyFactory;
+import com.jme3.water.WaterFilter;
 
 
 public class GSoC_DEMO extends SimpleApplication {
@@ -155,7 +156,7 @@ public class GSoC_DEMO extends SimpleApplication {
     	VoxelExtractor finalVolume = CSGOperators.union(false,CSGOperators.difference(CSGOperators.paint(sphereExtractor,boxExtractor),boxExtractor2),boxExtractor);
 //    	paint =  CSGOperators.difference(paint, sphereExtractor2);
     	
-    	float res = .5f;
+    	float res = 1f;
     	
 //    	Chunk c =new Chunk(new Vector3f(-4.0f,-4.0f,-4.0f),20,20,20,0.25f);
 //    	Chunk c =new Chunk(new Vector3f(-4.0f,-4.0f,0.0f),20,20,20,0.25f);
@@ -192,7 +193,7 @@ public class GSoC_DEMO extends SimpleApplication {
     	world.preformOperation(CSGOperators.unionOverwrite, ve.getBoundingBox(), ve);
 //    	
 //    	world.preformOperation(CSGOperators.unionOverwrite, sphereExtractor3.getBoundingBox(), sphereExtractor3);
-    	world.update(rootNode,1000);
+    	world.update(rootNode,2500);
     	
 //    	Vector3f borken = new Vector3f(15.116098f, 2.7305896f, 14.761848f);
 //    	BoxVolume bv = new BoxVolume(borken,2f,2f,2f);
@@ -444,6 +445,34 @@ public class GSoC_DEMO extends SimpleApplication {
       dlsr.setEdgeFilteringMode(EdgeFilteringMode.PCFPOISSON);
       dlsr.setEdgesThickness(2);
       dlsr.setLambda(1.03f);
+      
+      
+      FilterPostProcessor fpp;
+      fpp = new FilterPostProcessor(assetManager);
+      
+      LightScatteringFilter filter = new LightScatteringFilter(sun2.getDirection().mult(-3000));
+      filter.setEnabled(true);
+      filter.setLightDensity(.25f);
+//      filter.setLightDensity(f);
+//      LightScatteringUI ui = new LightScatteringUI(inputManager, filter);
+      fpp.addFilter(filter);
+      
+   
+      WaterFilter water;
+      float initialWaterHeight = -2f;
+      water = new WaterFilter(rootNode, sun2.getDirection());
+      water.setWaterHeight(initialWaterHeight);
+      fpp.addFilter(water);
+      viewPort.addProcessor(fpp);
+      
+      
+//      FogFilter fog=new FogFilter();
+//      fog.setFogColor(new ColorRGBA(0.9f, 0.9f, 0.9f, 1.0f));
+//      fog.setFogDistance(20);
+//      fog.setFogDensity(1f);
+//      fpp.addFilter(fog);
+//      viewPort.addProcessor(fpp);
+   
       
       AmbientLight al = new AmbientLight();
       al.setColor(ColorRGBA.White.mult(1.55f));
