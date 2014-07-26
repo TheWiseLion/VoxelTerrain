@@ -32,26 +32,21 @@
 
 
 
-import idea.Chunk;
-import idea.VoxelGrid;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import VoxelSystem.PagingVoxelObject;
-import VoxelSystem.VoxelObject;
 import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
+import VoxelSystem.DensityVolumes.Shapes.NoiseShape;
 import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Hermite.VoxelDensityExtractor;
-import VoxelSystem.Hermite.VoxelExtractor;
+import VoxelSystem.DensityVolumes.Shapes.VolumeShape;
 import VoxelSystem.Operators.CSGOperators;
-import VoxelSystem.SurfaceExtractors.DualContour;
-import VoxelSystem.VoxelMaterials.MaterialBuilder;
+import VoxelSystem.VoxelData.VoxelDensityExtractor;
+import VoxelSystem.VoxelData.VoxelExtractor;
 import VoxelSystem.VoxelMaterials.VoxelType;
+import VoxelSystem.VoxelObjects.PagingVoxelObject;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.ScreenshotAppState;
@@ -65,6 +60,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
@@ -72,10 +68,11 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.shape.Sphere.TextureMode;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.shadow.EdgeFilteringMode;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
-import com.jme3.texture.Texture.MinFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.SkyFactory;
 
@@ -104,6 +101,7 @@ public class GSoC_DEMO extends SimpleApplication {
     private Sphere bullet;
     private SphereCollisionShape bulletCollisionShape;
     private Geometry cube;
+    private float operationWaitTime = 0;
     
     private boolean showingColor = true;
     private boolean showingTriangles = false;
@@ -111,7 +109,7 @@ public class GSoC_DEMO extends SimpleApplication {
     
     private int showMeshNum = -1;
     
-    
+    List<Geometry> worldGen;
     private Geometry[] colorMesh, wireMesh;
     private Geometry[] QuadData;
     PagingVoxelObject world;
@@ -120,40 +118,18 @@ public class GSoC_DEMO extends SimpleApplication {
     
     @Override
     public void simpleInitApp() {
-
-		// Initialize Voxel Materials:
-		List<VoxelType> types = new ArrayList<VoxelType>();
-		VoxelType rock = new VoxelType();
-		rock.name = "rock";
-		rock.typeID = 0;
-		rock.colorMap = "Textures/TextureArray/BlackRockD512.png";
-
-		
-		VoxelType sand = new VoxelType();
-		sand.name = "sand";
-		sand.typeID = 1;
-		sand.colorMap = "Textures/TextureArray/SandD512.png";
-		
-		VoxelType lava = new VoxelType();
-		lava.name = "lava";
-		lava.typeID = 2;
-		lava.colorMap = "Textures/TextureArray/lavaD512.png";
-
-		types.add(rock);
-		types.add(sand);
-		types.add(lava);
-		
-		MaterialBuilder mb = new MaterialBuilder(512, 4, MinFilter.Trilinear);
-		Map<Integer, Material> typeToMaterial = mb.getMaterials(types,assetManager);
     	
     	
-    	//Set up voxel object bounds:
+    	
+    	Map<Integer, VoxelType> materialTypes = Materials.getMaterials(assetManager);
+		
+		//Set up voxel object bounds:
     	BoundingBox bb = new BoundingBox(new Vector3f(-20, -20, -20),new Vector3f(20, 20, 20));
     	
     	//Make a box:
-    	Vector3f boxCenter = new Vector3f(1.24234f,2.2342f,-1.4234f);
-		BoxVolume box = new BoxVolume(boxCenter, 5, 5, 5);
-		BoxVolume box2 = new BoxVolume(new Vector3f(-2.5f,0,-2.5f), 5, 20, 5);
+    	Vector3f boxCenter = new Vector3f(0,-1,0);//1.24234f,2.2342f,-1.4234f
+		BoxVolume box = new BoxVolume(boxCenter, 5, 5.25f, 5);
+		BoxVolume box2 = new BoxVolume(new Vector3f(), 20, 20, 20);
     	
 		//Make a sphere
 		SphereVolume ss = new SphereVolume(new Vector3f(0, 0, 0), 4f);
@@ -165,48 +141,100 @@ public class GSoC_DEMO extends SimpleApplication {
 		
 		//Boiler plate.....
     	VoxelExtractor sphereExtractor = new VoxelDensityExtractor(ss);
-    	VoxelExtractor boxExtractor = new VoxelDensityExtractor(box);
+    	VoxelExtractor boxExtractor = CSGOperators.translate(new VoxelDensityExtractor(box), new Vector3f(0,1,0));
     	VoxelExtractor boxExtractor2 = new VoxelDensityExtractor(box2);
-    	VoxelExtractor sphereExtractor2 = new VoxelDensityExtractor(new SphereVolume(new Vector3f(2f, 0, 0), 4f));
+    	SphereVolume sv2 = new SphereVolume(new Vector3f(2f, 0, 0), 4f);
+    	sv2.setSimpleType(1);
+    	VoxelExtractor sphereExtractor2 = new VoxelDensityExtractor(sv2);
     	
     	SphereVolume sv = new SphereVolume(new Vector3f(2f, 2f, 2), 5f);
-    	sv.setSimpleType(2);
+    	sv.setSimpleType(1);
     	VoxelExtractor sphereExtractor3 = new VoxelDensityExtractor(sv);
     	//Add the box and sphere together
     	VoxelExtractor finalVolume = CSGOperators.union(false,CSGOperators.difference(CSGOperators.paint(sphereExtractor,boxExtractor),boxExtractor2),boxExtractor);
 //    	paint =  CSGOperators.difference(paint, sphereExtractor2);
     	
-    	float res = 1f;
+    	float res = .5f;
     	
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,-4.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,-4.0f,0.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,0.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,0.0f,0.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,4.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(-4.0f,4.0f,0.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,-4.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,-4.0f,0.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,0.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,0.0f,0.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,4.0f,-4.0f),20,20,20,0.25f);
+//    	Chunk c =new Chunk(new Vector3f(0.0f,4.0f,0.0f),20,20,20,0.25f);
+//    	c.extract(boxExtractor);
+//    	Vector3f vn =  new Vector3f(-8.0f, -4.0f, -8.0f);
+//    	VoxelGrid vg= new Chunk(vn,20,20,20, .25f);
+//    	vg.extract(boxExtractor);
+//    	DualContour dc = new DualContour();
+//    	dc.extractSurface(vg);
     	
-//    	Subtract new box from sphere:
+
+//    	vg.extract(CSGOperators.union(true, sphereExtractor2,vg));
+    	//NOW: In place operations:
     	
-    	VoxelGrid vg = new Chunk(new Vector3f(0,0,0), (int)(5f/res),(int)(5f/res),(int)(5f/res), res);//finalVolume.extract(new Vector3f(0,0,0), (int)(5f/res),(int)(5f/res),(int)(5f/res), res);
-    	vg.extract(boxExtractor);
+    	Material green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+    	green.setColor("Color", ColorRGBA.Green);
     	
-//    	world = new PagingVoxelObject(.25f, typeToMaterial);
-//    	
-//    	world.set(finalVolume);
-//    	
-//    	world.update(rootNode);
+    	world = new PagingVoxelObject(res, materialTypes);
+    	VolumeShape vs = new NoiseShape();
+    	vs.setSimpleType(1);
+    	world.set(new VoxelDensityExtractor(vs));
+    	
+//    	world.preformOperation(CSGOperators.unionOverwrite, sphereExtractor3.getBoundingBox(), sphereExtractor3);
+    	worldGen = world.update(rootNode);
+    	
+//    	Vector3f borken = new Vector3f(15.116098f, 2.7305896f, 14.761848f);
+//    	BoxVolume bv = new BoxVolume(borken,2f,2f,2f);
+//    	bv.setSimpleType(1);
+//    	world.add(new VoxelDensityExtractor(bv));
     	//Extract Mesh Data:
     	
 //    	VoxelNode vn = new VoxelNode(new Vector3f(-20,-20,-20),(int)(40f/.25f),(int)(40f/.25f),(int)(40f/.25f),.25f);
 //    	vn.extract(sphereExtractor);
 //    	finalVolume = CSGOperators.union(false, vn,sphereExtractor);
     	
-    	VoxelObject vo = new VoxelObject(bb,vg, res);//finalVolume,.25f);
-//    	init = System.currentTimeMillis();
-    	colorMesh = vo.extractGeometry(typeToMaterial);
-//    	System.out.println((System.currentTimeMillis()-init));
-//    	
-    	for(int i=0;i<colorMesh.length;i++){
-			  rootNode.attachChild(colorMesh[i]);
-		}
+//    	VoxelGrid vg = new Chunk(new Vector3f(-20f,-20f,-20f), (int)(40f/res),(int)(40f/res),(int)(40f/res), res);
+//    	vg.extract(boxExtractor);
     	
+//    	VoxelObject vo = new VoxelObject(bb,vg, res);//finalVolume,.25f);
+////    	init = System.currentTimeMillis();
+//    	colorMesh = vo.extractGeometry(typeToMaterial);
+////    	System.out.println((System.currentTimeMillis()-init));
+//    	for(int i=0;i<colorMesh.length;i++){
+//			  rootNode.attachChild(colorMesh[i]);
+//		}
+    	
+    	
+//    	DualContour dc = new DualContour();    	
 //    	
-    	//Prepare debug data:
-    	DualContour dc = new DualContour();
+//    	List<SurfacePoint> sps = dc.extractSurface(vg);
+//    	BasicMesher bm = new BasicMesher();
+//    	bm.addTriangles(sps);
+//		Map<Integer, Mesh> meshes= bm.compileMeshes();
+//		ArrayList<Geometry> generated = new ArrayList<Geometry>(meshes.size());
+//		
+//		for(Integer i : meshes.keySet()){
+//			Mesh m = meshes.get(i);
+//			m.updateBound();
+//			m.updateCounts();
+//			if(m.getTriangleCount() > 0){
+//				Geometry g = new Geometry();
+//				g.setMesh(m);
+//				g.setMaterial(typeToMaterial.get(i));
+//				generated.add(g);
+//				rootNode.attachChild(g);
+////				g.setLocalTranslation(this.getCorner());
+//			}
+//		}
+    	
+
     	Material red = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     	red.setColor("Color", ColorRGBA.Red);
     	
@@ -215,8 +243,6 @@ public class GSoC_DEMO extends SimpleApplication {
     	
     	Material blue = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     	blue.setColor("Color", ColorRGBA.Blue);
-    	Material green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-    	green.setColor("Color", ColorRGBA.Green);
     	
     	Material teal = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     	teal.setColor("Color", ColorRGBA.Cyan);
@@ -237,7 +263,7 @@ public class GSoC_DEMO extends SimpleApplication {
   
         
     	flyCam.setMoveSpeed(10);
-        cam.setLocation(new Vector3f(0,0,0));
+        cam.setLocation(new Vector3f(14.81f,2.7f,14.4f));
         
         //PHYSICS SETUP//
         bulletAppState = new BulletAppState();
@@ -275,7 +301,6 @@ public class GSoC_DEMO extends SimpleApplication {
     }
     
 
-    
     @Override
     public void simpleUpdate(float tpf) {
         //Print Camera location
@@ -283,87 +308,105 @@ public class GSoC_DEMO extends SimpleApplication {
         direction.setText(""+cam.getDirection());
         selectedMaterialN.setText("Selected Material: "+selectedMaterial);
         counter+=tpf;
+        selectedMaterial = selectedMaterial%6;
         
-        if(input.addDown){
-        	BoxVolume bv = new BoxVolume(cam.getLocation(),2f,2f,2f);
-        	bv.setSimpleType(1);
+        if(input.addDown && operationWaitTime < counter){
+//        	SphereVolume bv = new SphereVolume(cam.getLocation(),10);
+        	float f = FastMath.nextRandomFloat()*3f+1;
+        	BoxVolume bv = new BoxVolume(cam.getLocation(),2,2,2); 
+        	bv.setSimpleType(selectedMaterial);
         	long init = System.currentTimeMillis();
-//        	world.set(new VoxelDensityExtractor(bv));
-        	world.add(new VoxelDensityExtractor(bv));
+//        	world.set();
+        	world.preformOperation(CSGOperators.unionNoOverwrite,bv.getEffectiveVolume(),CSGOperators.makeCubed(new VoxelDensityExtractor(bv)));
+        	world.update(rootNode);
         	System.out.println((System.currentTimeMillis()-init));
 //        	input.addDown = false;
-        	world.update(rootNode);
+        	operationWaitTime = counter + 1f;
+//        	System.out.println(""+bv.count +" : "+bv.count2);
         }
         
         if(input.removeDown){
-        	BoxVolume bv = new BoxVolume(cam.getLocation(),1f,1f,1f);
-        	bv.setSimpleType(1);
-//        	long init = System.currentTimeMillis();
-//        	world.set(new VoxelDensityExtractor(bv));
-        	world.remove(new VoxelDensityExtractor(bv));
-//        	System.out.println((System.currentTimeMillis()-init));
+        	float f = FastMath.nextRandomFloat()*3f+1;
+        	BoxVolume bv = new BoxVolume(cam.getLocation(),f,f,f); 
+        	bv.setSimpleType(selectedMaterial);
+        	long init = System.currentTimeMillis();
+//        	world.set();
+        	world.preformOperation(CSGOperators.difference,bv.getEffectiveVolume(),new VoxelDensityExtractor(bv));
+        	System.out.println((System.currentTimeMillis()-init));
 //        	input.addDown = false;
+        	operationWaitTime = counter + .15f;
         	world.update(rootNode);
-        	input.removeDown= false;
         }
         
         updateBalls();
      }
  
+    boolean wire = true;
   public void changeColorMesh(){
-	  if(showingColor){ //remove the meshes
-		//Remove old mesh
-		if(showMeshNum == -1){//remove all the meshes
-			  for(int i=0;i<colorMesh.length;i++){
-				  rootNode.detachChild(colorMesh[i]);
-			  }
-		 }else{ //remove a specific mesh
-			 rootNode.detachChild(colorMesh[showMeshNum]);
-		 }
+//	  if(showingColor){ //remove the meshes
+//		//Remove old mesh
+//		if(showMeshNum == -1){//remove all the meshes
+//			  for(int i=0;i<colorMesh.length;i++){
+//				  rootNode.detachChild(colorMesh[i]);
+//			  }
+//		 }else{ //remove a specific mesh
+//			 rootNode.detachChild(colorMesh[showMeshNum]);
+//		 }
+//	  }
+//	  
+//	  showMeshNum++;
+//	  if(showMeshNum >= colorMesh.length){
+//		  showingColor = false;
+//		  showMeshNum = -2;
+//	  }else{
+//		  showingColor = true;
+//		  if(showMeshNum == -1){//remove all the meshes
+//			  for(int i=0;i<colorMesh.length;i++){
+//				  rootNode.attachChild(colorMesh[i]);
+//			  }
+//		 }else{
+//			 rootNode.attachChild(colorMesh[showMeshNum]);
+//		 }
+//	  }
+	  for(Geometry g : worldGen){
+		  g.getMaterial().getAdditionalRenderState().setWireframe(wire);
+		  rootNode.attachChild(g);
 	  }
-	  
-	  showMeshNum++;
-	  if(showMeshNum >= colorMesh.length){
-		  showingColor = false;
-		  showMeshNum = -2;
-	  }else{
-		  showingColor = true;
-		  if(showMeshNum == -1){//remove all the meshes
-			  for(int i=0;i<colorMesh.length;i++){
-				  rootNode.attachChild(colorMesh[i]);
-			  }
-		 }else{
-			 rootNode.attachChild(colorMesh[showMeshNum]);
-		 }
-	  }
+	  this.wire = !wire;
   }
   
   public void changeQuads(){
-	  if(showingQuads){
-		  for(int i=0;i<QuadData.length;i++){
-			  rootNode.detachChild(QuadData[i]);
-		  }
-		  showingQuads=false;
-	  }else{
-		  for(int i=0;i<QuadData.length;i++){
-			  rootNode.attachChild(QuadData[i]);
-		  }
-		  showingQuads=true;
+	  showMesh++;
+	  for(Geometry g : worldGen){
+		  rootNode.detachChild(g);
+		  g.getMaterial().getAdditionalRenderState().setWireframe(false);
 	  }
+	  
+	  showMesh = showMesh%worldGen.size();
+	  rootNode.attachChild(worldGen.get(showMesh));
   }
 
   public void changeTriangles(){
-	  if(showingTriangles){
-		  for(Geometry g : wireMesh){
-			  rootNode.detachChild(g);
-		  }
-		  showingTriangles=false;
-	  }else{
-		  for(Geometry g : wireMesh){
-			  rootNode.attachChild(g);
-		  }
-		  showingTriangles=true;
+//	  if(showingTriangles){
+//		  for(Geometry g : wireMesh){
+//			  rootNode.detachChild(g);
+//		  }
+//		  showingTriangles=false;
+//	  }else{
+//		  for(Geometry g : wireMesh){
+//			  rootNode.attachChild(g);
+//		  }
+//		  showingTriangles=true;
+//	  }
+	  showMesh--;
+	  for(Geometry g : worldGen){
+		  rootNode.detachChild(g);
 	  }
+	  if(showMesh<0){
+		  showMesh = worldGen.size();
+	  }
+	  showMesh = showMesh%worldGen.size();
+	  rootNode.attachChild(worldGen.get(showMesh));
   }
   
   //Initialize Materials// 
@@ -371,8 +414,19 @@ public class GSoC_DEMO extends SimpleApplication {
 	  //Intialize Lights
 	  DirectionalLight sun2 = new DirectionalLight();
       sun2.setColor(ColorRGBA.White);
-      sun2.setDirection(new Vector3f(0.408248f, 0.408248f, 0.816497f).normalizeLocal().negate());
+      sun2.setDirection(new Vector3f(0.408248f, 0.408248f, 0.816497f).normalizeLocal());
       rootNode.addLight(sun2);
+      
+      /* Drop shadows */
+      final int SHADOWMAP_SIZE=1024;
+      DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+      dlsr.setLight(sun2);
+      dlsr.setShadowIntensity(.5f);
+      viewPort.addProcessor(dlsr);
+      dlsr.setEnabledStabilization(true);
+      dlsr.setEdgeFilteringMode(EdgeFilteringMode.PCFPOISSON);
+      dlsr.setEdgesThickness(2);
+      dlsr.setLambda(1.03f);
       
       AmbientLight al = new AmbientLight();
       al.setColor(ColorRGBA.White.mult(1.3f));

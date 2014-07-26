@@ -98,7 +98,7 @@ public class BasicMesher {
 		for (Integer type : typeToTriangles.keySet()) {
 //			System.out.println("Basic Mesher: "+type);
 			List<int[]> triangle = typeToTriangles.get(type);
-			System.out.println(type+": "+triangle.size());
+//			System.out.println(type+": "+triangle.size());
 			for (int i = 0; i < triangle.size(); i++) {
 				int tri[] = triangle.get(i);
 				for (int k = 2; k >= 0; k--) {
@@ -110,7 +110,7 @@ public class BasicMesher {
 					tangentList.add(new Vector4f(v[0].x, v[0].y, v[0].z, -1.0f));
 				}
 			}
-			System.out.println("Type: "+type+" with "+vertList.size());
+//			System.out.println("Type: "+type+" with "+vertList.size());
 			Mesh m = new Mesh();
 			m.setBuffer(Type.Position, 3,Format.Float, BufferUtils.createFloatBuffer(vertList.toArray(new Vector3f[0])));
 	        m.setBuffer(Type.Normal, 3,Format.Float, BufferUtils.createFloatBuffer(normalList.toArray(new Vector3f[0])));

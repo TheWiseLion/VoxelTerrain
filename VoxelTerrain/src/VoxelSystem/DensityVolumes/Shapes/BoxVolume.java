@@ -5,7 +5,7 @@ import com.jme3.math.Vector3f;
 
 public class BoxVolume extends VolumeShape{
 	private Vector3f center;
-	private Vector3f extents;
+//	private Vector3f extents;
 	private BoundingBox bb;
 	
 	public BoxVolume(Vector3f center, float width, float height, float length){
@@ -16,7 +16,7 @@ public class BoxVolume extends VolumeShape{
 		
 		
 		bb = new BoundingBox(min,max);
-		extents = new Vector3f(width,height,length);
+//		extents = new Vector3f(width,height,length);
 		this.center = center;
 	}
 	
@@ -127,6 +127,11 @@ public class BoxVolume extends VolumeShape{
 	@Override
 	public BoundingBox getEffectiveVolume() {
 		return bb;
+	}
+
+	@Override
+	public boolean isOutside(float x, float y, float z) {
+		return !VolumeShape.contains(bb, new Vector3f(x,y,z));
 	}
 
 

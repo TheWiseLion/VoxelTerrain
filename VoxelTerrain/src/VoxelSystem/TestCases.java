@@ -4,9 +4,9 @@ import com.jme3.math.Vector3f;
 
 import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
 import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Hermite.VoxelDensityExtractor;
-import VoxelSystem.Hermite.VoxelExtractor;
 import VoxelSystem.Operators.CSGOperators;
+import VoxelSystem.VoxelData.VoxelDensityExtractor;
+import VoxelSystem.VoxelData.VoxelExtractor;
 
 public class TestCases {
 	public static void main(String [] args){

@@ -1,29 +1,26 @@
 MaterialDef VoxelMaterial {
 	MaterialParameters {
-        TextureArray colorMaps
-        //TextureArray normalMaps
-        //TextureArray specularMaps
-        //TextureArray parallaxMaps
-        //TextureArray noiseMaps
+         //Use minnaert diffuse instead of lambert
+        Boolean Minnaert
         
-        Int colorIndex
-        //Int normalmap
-        //Int specularmap
-        //Int noisemap
-        //Int parallaxMaps
+        //Use use attenuation (point light or spot light)
+        Boolean Attenuation
         
-        //Float scalar
+        Float Scalar : 1
+        Float Shininess : 1
         
-        //Float scalar2
-        //Float hl  //Highlight value
-        //Float des //Desaturation value
-        //Float ?rotator?
+        // Diffuse map
+        Texture2D DiffuseMap
+
+        // Normal map
+        Texture2D NormalMap
+
+        // Specular/gloss map
+        Texture2D SpecularMap
+
+        // Parallax/height map
+        Texture2D ParallaxMap
         
-        //Color color
-        //Float colorTint
-        
-        //Float Shininess
-        //Float 
     }
 
     Technique {
@@ -31,7 +28,7 @@ MaterialDef VoxelMaterial {
         
         VertexShader GLSL150:   Shaders/VoxelMaterial.vert
         FragmentShader GLSL150: Shaders/VoxelMaterial.frag
-        
+         
         WorldParameters {
             WorldViewProjectionMatrix
             NormalMatrix
@@ -39,6 +36,16 @@ MaterialDef VoxelMaterial {
             ViewMatrix
             CameraPosition
             WorldMatrix
+        }
+        
+        Defines {
+            MINNAERT  : Minnaert
+            ATTENUATION : Attenuation
+            DIFFUSEMAP : DiffuseMap
+            NORMALMAP : NormalMap
+            SPECULARMAP : SpecularMap
+            PARALLAXMAP : ParallaxMap
+            
         }
     	
     }

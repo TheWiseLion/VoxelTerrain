@@ -11,7 +11,7 @@
 	<classpathentry kind="lib" path="jars/jglfont-core.jar"/>
 	<classpathentry kind="lib" path="jars/jinput.jar"/>
 	<classpathentry kind="lib" path="jars/jME3-blender.jar"/>
-	<classpathentry kind="lib" path="jars/jME3-core.jar" sourcepath="C:/Users/wiselion/Desktop/Summer2014/JMonkeyGSoC/JmonkeyTestBed/jME3_2014-04-25/source"/>
+	<classpathentry kind="lib" path="jars/jME3-core.jar" sourcepath="D:/Users/0xFFFF/Downloads/GSoC/jmonkeyengine-master/jmonkeyengine-master"/>
 	<classpathentry kind="lib" path="jars/jME3-desktop.jar"/>
 	<classpathentry kind="lib" path="jars/jME3-effects.jar"/>
 	<classpathentry kind="lib" path="jars/jME3-jbullet.jar"/>
@@ -34,5 +34,6 @@
 	<classpathentry kind="lib" path="jars/stack-alloc.jar"/>
 	<classpathentry kind="lib" path="jars/vecmath.jar"/>
 	<classpathentry kind="lib" path="jars/xmlpull-xpp3.jar"/>
+	<classpathentry kind="lib" path="jars/JavaFastPFOR-0.0.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

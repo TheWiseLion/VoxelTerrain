@@ -25,13 +25,25 @@ public abstract class VolumeShape implements DensityVolume{
 		return tv;
 	}
 
-	public void setTypeVolume(TypeVolume tv) {
-		this.tv = tv;
+//	public void setTypeVolume(TypeVolume tv) {
+//		this.tv = tv;
+//	}
+	
+	/***
+	 * Used to accelerate operations. Exact density may take a long time to 
+	 * calculate. Exact density is only required at edges between material boundaries.
+	 */
+	public abstract boolean isOutside(float x, float y, float z);
+	
+	public int getType(float x, float y,float z){
+		if(isOutside(x,y,z)){
+			return -1;
+		}else{
+			return tv.getType(x, y, z);	
+		}
 	}
 	
-	public final int getType(float x, float y,float z){
-		return tv.getType(x, y, z);
-	}
+	
 	
 	/***
 	 * Sets all the voxel type's of this volume to the given parameter
@@ -52,5 +64,6 @@ public abstract class VolumeShape implements DensityVolume{
 				&& FastMath.abs(center.y - point.y) <= bb.getYExtent()
 				&& FastMath.abs(center.z - point.z) <= bb.getZExtent();
 	}
+	
 	
 }

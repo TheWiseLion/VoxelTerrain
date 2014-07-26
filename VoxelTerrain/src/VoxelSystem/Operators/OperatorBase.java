@@ -1,8 +1,8 @@
 package VoxelSystem.Operators;
 
-import VoxelSystem.Hermite.ExtractorBase;
-import VoxelSystem.Hermite.HermiteEdge;
-import VoxelSystem.Hermite.VoxelExtractor;
+import VoxelSystem.VoxelData.ExtractorBase;
+import VoxelSystem.VoxelData.HermiteEdge;
+import VoxelSystem.VoxelData.VoxelExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.FastMath;
@@ -13,7 +13,12 @@ import com.jme3.math.Vector3f;
  * thus aren't able to be queried outside their bounding boxes. To make the writing of operators simpler
  * I've constructed this class to deal with the breaking down of the different edge cases.
  * 
- * It breaks down all 5 basic cases for any operation between 2 volumes.
+ * It breaks down all 6 basic cases for any operation between 2 volumes.
+ * Case 1 - Query points both lie in side intersection volume
+ * Case 2 - One point lies on the intersection
+ * Case 3 - One point in each volume (neither in intersection)
+ * Case 4 - Edge lies in (or on) one of the volumes
+ * Case 5 - Neither query points lie in either of the volumes
  */
 public abstract class OperatorBase extends ExtractorBase{
 	protected VoxelExtractor v1;
@@ -46,22 +51,13 @@ public abstract class OperatorBase extends ExtractorBase{
 	
 	
 	/**
+	 * Case 1:
 	 * This is called when both points are in the intersection of both volumes.
 	 */
 	public abstract HermiteEdge getEdgeIntersection(Vector3f p1,Vector3f p2);
 	
-	/**
-	 * Strictly inside volume 1
-	 */
-	public abstract HermiteEdge getEdgeV1(Vector3f p1,Vector3f p2);
-	
-	/**
-	 * Strictly inside volume 2
-	 */
-	public abstract HermiteEdge getEdgeV2(Vector3f p1,Vector3f p2);
-	
-	
 	/***
+	 * Case 2:
 	 * This is called when only p1 falls inside the intersection of the volumes but
 	 * p2 does not.
 	 * e1 is the hermite edge of volume 1 (between p1 and p2)
@@ -71,7 +67,7 @@ public abstract class OperatorBase extends ExtractorBase{
 	public abstract HermiteEdge getEdgeIntersectionInconsistant(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2);
 	
 	/***
-	 * The final edge case: 
+	 * Case 3:
 	 * p1 is in volume 1
 	 * p2 is in volume 2
 	 * e1 is the hermite edge of volume 1 (between p1 and p2)
@@ -79,17 +75,26 @@ public abstract class OperatorBase extends ExtractorBase{
 	 */
 	public abstract HermiteEdge getEdgeInconsistant(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2);
 	
+	/**
+	 * Case 4:
+	 * Strictly inside/on volume 1
+	 */
+	public abstract HermiteEdge getEdgeV1(Vector3f p1,Vector3f p2);
+	
+	/**
+	 * Case 4:
+	 * Strictly inside volume 2
+	 */
+	public abstract HermiteEdge getEdgeV2(Vector3f p1,Vector3f p2);
+	
+	/**
+	 * Case 5:
+	 * Strictly outside both volumes
+	 */
+	public abstract HermiteEdge getInconsistantComplete(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2);
+	
 	@Override
 	public HermiteEdge getEdge(Vector3f p1, Vector3f p2) {
-		//If at least one point is in volume (ELSE ERROR)
-		//TODO: At some point move this to validator.
-		boolean i1 = inVolume(p1, this.getBoundingBox());
-		boolean i2 = inVolume(p2,this.getBoundingBox());
-		
-		if(!i1 && !i2){
-			throw new RuntimeException("");
-		}
-		
 		//TODO: check early out cases (only1/only2 etc)
 		
 		
@@ -97,10 +102,10 @@ public abstract class OperatorBase extends ExtractorBase{
 		boolean b2 = inVolume(p2,intersection);
 		
 		//If p1 and p2 are in intersection:
-		if(b1 && b2){
+		if(b1 && b2){//Case 1
 			return getEdgeIntersection(p1,p2);
 		
-		}else if(b1 != b2){ //one point is in intersection
+		}else if(b1 != b2){ //one point is in intersection (Case 2)
 			//Grab both edges let operator decide. Be sure to be consistent (pt1 in side as first param)
 			if(b1 == true){
 				HermiteEdge e1 = validate(v1.getEdge(p1, p2));
@@ -126,16 +131,17 @@ public abstract class OperatorBase extends ExtractorBase{
 					return getEdgeInconsistant(e1, e2, p1, p2);
 				}else{ //p1 in v2, p2 in v1
 					HermiteEdge e1 = validate(v1.getEdge(p2, p1));
-					HermiteEdge e2 = validate(v2.getEdge(p2, p2));
+					HermiteEdge e2 = validate(v2.getEdge(p2, p1));
 					return swap(getEdgeInconsistant(e1, e2, p2, p1));
 				}
-			}else if(bv11 || bv21){// if volume 1 only
-					return getEdgeV1(p1,p2);
-			}else if(bv12 || bv22){ //if volume 2 only
-					return getEdgeV2(p1,p2);
+//			}else if(bv11 || bv21){// if volume 1 only
+//					return getEdgeV1(p1,p2);
+//			}else if(bv12 || bv22){ //if volume 2 only
+//					return getEdgeV2(p1,p2);
 			}else{
-				return null;
-//				throw new RuntimeException("I dont understand.");
+				HermiteEdge e1 = validate(v1.getEdge(p1, p2));
+				HermiteEdge e2 = validate(v2.getEdge(p1, p2));
+				return getInconsistantComplete(e1, e2, p1, p2);
 			}
 		}
 		

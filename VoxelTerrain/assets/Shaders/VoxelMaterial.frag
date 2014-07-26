@@ -1,54 +1,49 @@
-#extension GL_EXT_texture_array : enable
+#ifdef DIFFUSEMAP
+  uniform sampler2D m_DiffuseMap;
+#endif
 
-uniform sampler2DArray m_colorMaps;
-uniform int m_colorIndex;
-uniform vec4 g_LightPosition;
+#ifdef SPECULARMAP
+  uniform sampler2D m_SpecularMap;
+#endif
 
+#ifdef NORMALMAP
+  uniform sampler2D m_NormalMap;   
+#endif
+
+#ifdef PARALLAXMAP
+  uniform sampler2D m_ParallaxMap;  
+#endif
+
+#ifdef PARALLAXMAP
+    uniform float m_ParallaxHeight;
+#endif
+
+
+uniform float m_Scalar;
+uniform float m_Shininess;
+
+//Vertex Position (model space)
 in vec3 vertex;
+
+//Normal in model space
 in vec3 triplanerNormal;
-in vec3 wvNormal;
-in vec3 AmbientSum;
-in vec4 DiffuseSum;
-in vec3 SpecularSum;
 
-//Pixel Lighting:
-uniform vec4 g_LightDirection;
-in vec3 vViewDir;
-in vec4 vLightDir;
+//Normal in view space
+in vec3 vNormal;
+
+
+
+//Light Information
+in vec3 lightDir;
+
+//Specular or bump info
+in vec3 viewDir;
 in vec3 lightVec;
+in vec3 halfVec;
 
-float lightComputeDiffuse(in vec3 norm, in vec3 lightdir, in vec3 viewdir){
-	float ld = max(0.0, dot(norm, lightdir));
-	//float NdotL = max(0.0, dot(norm, lightdir));
-    //float NdotV = max(0.0, dot(norm, viewdir));
-    //ld = NdotL * pow(max(NdotL * NdotV,.1), -1.0);
-    
-	return ld;
-    
-}
-
-float lightComputeSpecular(in vec3 norm, in vec3 viewdir, in vec3 lightdir, in float shine){
-    // Standard Phong
-	vec3 R = reflect(-lightdir, norm);
-	return pow(max(dot(R, viewdir), 0.0), shine);
-    
-}
-
-vec2 computeLighting(in vec3 wvNorm, in vec3 wvViewDir, in vec3 wvLightDir,float s){
-	float diffuseFactor = lightComputeDiffuse(wvNorm, wvLightDir, wvViewDir);
-	float specularFactor = lightComputeSpecular(wvNorm, wvViewDir, wvLightDir, s);
-
-	float att = clamp(1.0 - g_LightPosition.w * length(lightVec), 0.0, 1.0);
-  
-	if (s <= 1.0) {
-		specularFactor = 0.0; // should be one instruction on most cards ..
-	}
-
-	specularFactor *= diffuseFactor;
-
-	return vec2(diffuseFactor, specularFactor)* vec2(att);
-}
-
+out vec3 AmbientSum;
+out vec4 DiffuseSum;
+out vec3 SpecularSum;
 
 void main(){
 	//Preform Triplaner:
@@ -57,45 +52,41 @@ void main(){
     blending = normalize(max(blending, 0.00001));
     blending.xyz /= (blending.x + blending.y + blending.z );
 	
-	//TODO: Make this a function
-	float scalar = 1.0;
-	vec3 coords = vertex;
-    vec4 col1 = texture2DArray( m_colorMaps, vec3(coords.yz * scalar,m_colorIndex));
-    vec4 col2 = texture2DArray( m_colorMaps,  vec3(coords.xz * scalar,m_colorIndex));
-    vec4 col3 = texture2DArray( m_colorMaps, vec3(coords.xy * scalar,m_colorIndex));
-    // blend the results of the 3 planar projections.
-    vec4 finalColor = col1 * blending.x + col2 * blending.y + col3 * blending.z;
+	vec3 coords = vertex * m_Scalar;
+	#ifdef DIFFUSEMAP
+		vec4 c1 = texture2D(m_DiffuseMap, coords.yz);
+		vec4 c2 = texture2D(m_DiffuseMap, coords.xz);
+		vec4 c3 = texture2D(m_DiffuseMap, coords.xy);
+		vec4 diffuseColor = c1 * blending.x + c2 * blending.y + c3 * blending.z;
+    #else
+		vec4 diffuseColor = vec4(1.0);
+    #endif
 	
+	//#ifdef NORMALMAP
+		vec4 n1 = texture2D(m_NormalMap, coords.yz);
+		vec4 n2 = texture2D(m_NormalMap, coords.xz);
+		vec4 n3 = texture2D(m_NormalMap, coords.xy);
+    	vec4 normalHeight = n1 * blending.x + n2 * blending.y + n3 * blending.z;
+    	vec3 normal = normalize((normalHeight.xyz * vec3(2.0) - vec3(1.0)));
+	//#else
+	// 	vec3 normal = normalize(triplanerNormal);
+	//#endif
 	
-	//Spot Fall Off 
-	float spotFallOff = .25;
-	if(g_LightDirection.w != 0.0){
-		vec3 L       = normalize(lightVec.xyz);
-		vec3 spotdir = normalize(g_LightDirection.xyz);
-		float curAngleCos = dot(-L, spotdir);             
-		float innerAngleCos = floor(g_LightDirection.w) * 0.001;
-		float outerAngleCos = fract(g_LightDirection.w);
-		float innerMinusOuter = innerAngleCos - outerAngleCos;
-		spotFallOff = (curAngleCos - outerAngleCos) / innerMinusOuter;
-		if(spotFallOff <= 0.0){
-			gl_FragColor.rgb = AmbientSum * finalColor.rgb;
-			gl_FragColor.a   = 1.0;
-			return;
-		}else{
-			spotFallOff = clamp(spotFallOff, 0.0, 1.0);
-		}
-	}
-    
-	//Lighting Terms
-	vec4 lightDir = vLightDir;
-	lightDir.xyz = normalize(lightDir.xyz);
-	vec3 viewDir = normalize(vViewDir);
-
-	vec2 light = computeLighting(wvNormal, viewDir, lightDir.xyz,1.0) * spotFallOff;
+	//#ifdef SPECULARMAP
+	//	vec4 s1 = texture2D(m_SpecularMap, coords.yz);
+	//	vec4 s2 = texture2D(m_SpecularMap, coords.xz);
+	//	vec4 s3 = texture2D(m_SpecularMap, coords.xy);
+	//	vec4 specularColor = s1 * blending.x + s2 * blending.y + s3 * blending.z;
+   // #else
+		vec4 specularColor = vec4(1.0);
+   // #endif
 	
-	gl_FragColor.rgb =  AmbientSum * finalColor.rgb  +
-						DiffuseSum.rgb * finalColor.rgb  * vec3(light.x) +
-						vec3(light.y);
-	gl_FragColor.rgb = finalColor.rgb;
+	float lamberFactor = max (dot (lightDir, normal), 0.0) * max (dot (lightDir, triplanerNormal), 0.0) ;
+	
+    //gl_FragColor.rgb =  AmbientSum       * diffuseColor.rgb  +
+    //                    DiffuseSum.rgb   * diffuseColor.rgb  * vec3(light.x) +
+    //                    SpecularSum2.rgb * specularColor.rgb * vec3(light.y);
+    gl_FragColor.rgb = diffuseColor * max(lamberFactor, .3) * 1.5;
 	gl_FragColor.a = 1.0;
+	
 }

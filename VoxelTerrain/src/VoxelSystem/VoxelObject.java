@@ -1,17 +1,18 @@
 package VoxelSystem;
 
-import idea.VoxelGrid;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import VoxelSystem.DensityVolumes.DensityVolume;
-import VoxelSystem.Hermite.VoxelExtractor;
 import VoxelSystem.MeshBuilding.BasicMesher;
 import VoxelSystem.MeshBuilding.SurfacePoint;
+import VoxelSystem.Operators.CSGHelpers;
 import VoxelSystem.SurfaceExtractors.DualContour;
 import VoxelSystem.SurfaceExtractors.SurfaceExtractor;
+import VoxelSystem.VoxelData.VoxelExtractor;
+import VoxelSystem.VoxelData.VoxelGrid;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;
@@ -61,17 +62,24 @@ public class VoxelObject {
 	public Geometry[] extractGeometry(Map<Integer,Material> typeToMaterial){
 		validateParameters();
 		
-		Vector3f ub = bb.getMax(new Vector3f());
-		Vector3f lb = bb.getMin(new Vector3f());
-		int stepX = (int) (Math.abs(ub.x-lb.x)/resolution);
-		int stepY = (int) (Math.abs(ub.x-lb.x)/resolution);
-		int stepZ = (int) (Math.abs(ub.x-lb.x)/resolution);
+		
+		BoundingBox bx = new BoundingBox();
+		CSGHelpers.getIntersection(dv.getBoundingBox(), bb, bx);
+			
+		//Clamp down to nearest voxel:
+		Vector3f ub = bx.getMax(new Vector3f());
+		Vector3f lb = bx.getMin(new Vector3f());
+		ub.addLocal(resolution, resolution, resolution);
+		lb.subtractLocal(resolution,resolution,resolution);
+		int stepX = (int) (Math.abs(ub.x-lb.x)/resolution)+1;
+		int stepY = (int) (Math.abs(ub.y-lb.y)/resolution)+1;
+		int stepZ = (int) (Math.abs(ub.z-lb.z)/resolution)+1;
 		
 		VoxelGrid hg  = dv.extract(lb,stepX,stepY,stepZ,resolution);
-		
+		BoundingBox bz = hg.getBoundingBox();
 		
 		Material errorMaterial = typeToMaterial.get(-1);
-		List<SurfacePoint> surfacePoints = se.extractSurface(lb,hg, resolution);
+		List<SurfacePoint> surfacePoints = se.extractSurface(hg);
 		BasicMesher bm = new BasicMesher();
 		bm.addTriangles(surfacePoints);
 		

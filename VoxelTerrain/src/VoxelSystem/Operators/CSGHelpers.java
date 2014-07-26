@@ -1,7 +1,7 @@
 package VoxelSystem.Operators;
 
-import VoxelSystem.Hermite.HermiteEdge;
-import VoxelSystem.Hermite.VoxelExtractor;
+import VoxelSystem.VoxelData.HermiteEdge;
+import VoxelSystem.VoxelData.VoxelExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;
@@ -138,6 +138,11 @@ public class CSGHelpers {
 		@Override
 		public HermiteEdge getEdgeInconsistant(HermiteEdge e1, HermiteEdge e2,Vector3f p1, Vector3f p2) {
 			return commonCase(e1,e2);
+		}
+
+		@Override
+		public HermiteEdge getInconsistantComplete(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2) {
+			return commonCase(e1,e2);
 		}		
 	}
 	
@@ -218,6 +223,11 @@ public class CSGHelpers {
 		public HermiteEdge getEdgeInconsistant(HermiteEdge e1, HermiteEdge e2, Vector3f p1, Vector3f p2) {
 			return commonCase(e1, e2);
 		}
+
+		@Override
+		public HermiteEdge getInconsistantComplete(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2) {
+			return commonCase(e1, e2);
+		}
 		
 	}
 	
@@ -283,6 +293,11 @@ public class CSGHelpers {
 		@Override
 		public HermiteEdge getEdgeInconsistant(HermiteEdge e1, HermiteEdge e2, Vector3f p1, Vector3f p2) {
 			
+			return commonCase(e1,e2);
+		}
+
+		@Override
+		public HermiteEdge getInconsistantComplete(HermiteEdge e1,HermiteEdge e2, Vector3f p1, Vector3f p2) {
 			return commonCase(e1,e2);
 		}
 
