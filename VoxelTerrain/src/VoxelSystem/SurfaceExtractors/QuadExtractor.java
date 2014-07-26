@@ -181,44 +181,37 @@ public class QuadExtractor {
 			tri.put(type, mo);
 		}
 		
-		Vector3f lNormal;
-		Vector2f uv0;
-		Vector2f uv1;
-		Vector2f uv2;
-		Vector3f tangent;
+	
 		
 		//Check for degenerate triangles:
 		boolean invalid1 = fuzzyEquals(v1,v2) || fuzzyEquals(v2,v3) || fuzzyEquals(v1,v3);
 		boolean invalid2 = fuzzyEquals(v1,v3) || fuzzyEquals(v3,v4) || fuzzyEquals(v4,v1);
 		if(invalid1 && invalid2){
 			return;
-		}else if(!invalid1){
+		}
+		
+		Vector3f lNormal;
+		Vector2f uv0 = new Vector2f();
+		Vector2f uv1  = new Vector2f();
+		Vector2f uv2  = new Vector2f();
+		Vector3f tangent = new Vector3f();
+		Vector3f biTangent = new Vector3f();
+		
+		if(!invalid1){
 			if(cw){
 				lNormal = computeNormal(v1,v2,v3);
-				uv0 = generateUV(v1, lNormal);
-				uv1 = generateUV(v2, lNormal);
-				uv2 = generateUV(v3, lNormal);
-				tangent = generateTangent(v1, v2, v3, uv0, uv1, uv2);
+				generateTangent(v1, v2, v3,lNormal,tangent,biTangent);
 			}else{
 				lNormal = computeNormal(v1,v3,v2);
-				uv0 = generateUV(v1, lNormal);
-				uv1 = generateUV(v2, lNormal);
-				uv2 = generateUV(v3, lNormal);
-				tangent = generateTangent(v1, v3, v2, uv0, uv2, uv1);
+				generateTangent(v1, v3, v2,lNormal,tangent,biTangent);
 			}
 		}else{
 			if(cw){
 				lNormal = computeNormal(v1,v3,v4);
-				uv0 = generateUV(v1, lNormal);
-				uv1 = generateUV(v3, lNormal);
-				uv2 = generateUV(v4, lNormal);
-				tangent = generateTangent(v1, v3, v4, uv0, uv1, uv2);
+				generateTangent(v1, v3, v4, lNormal,tangent,biTangent);
 			}else{
 				lNormal = computeNormal(v1,v4,v3);
-				uv0 = generateUV(v1, lNormal);
-				uv1 = generateUV(v4, lNormal);
-				uv2 = generateUV(v3, lNormal);
-				tangent = generateTangent(v1, v4, v3, uv0, uv1, uv2);
+				generateTangent(v1, v4, v3,lNormal,tangent,biTangent);
 			}
 		}
 		
@@ -227,27 +220,27 @@ public class QuadExtractor {
 			//Vector3f lNormal = new Vector3f(normal);
 			if(!support){
 				if(!invalid1){
-					mo.triangles.add(getTriIndex(v1, lNormal, tangent, mo));
-					mo.triangles.add(getTriIndex(v2, lNormal, tangent, mo));
-					mo.triangles.add(getTriIndex(v3, lNormal, tangent, mo));
+					mo.triangles.add(getTriIndex(v1, lNormal, tangent, biTangent, mo));
+					mo.triangles.add(getTriIndex(v2, lNormal, tangent, biTangent, mo));
+					mo.triangles.add(getTriIndex(v3, lNormal, tangent, biTangent, mo));
 				}
 				
 				if(!invalid2){
-					mo.triangles.add(getTriIndex(v1, lNormal, tangent, mo));
-					mo.triangles.add(getTriIndex(v3, lNormal, tangent, mo));
-					mo.triangles.add(getTriIndex(v4, lNormal, tangent, mo));
+					mo.triangles.add(getTriIndex(v1, lNormal, tangent, biTangent, mo));
+					mo.triangles.add(getTriIndex(v3, lNormal, tangent, biTangent, mo));
+					mo.triangles.add(getTriIndex(v4, lNormal, tangent, biTangent, mo));
 				}
 			}else{
 				if(!invalid1){
-					getTriIndex(v1, lNormal, tangent, mo);
-					getTriIndex(v2, lNormal, tangent, mo);
-					getTriIndex(v3, lNormal, tangent, mo);
+					getTriIndex(v1, lNormal, tangent, biTangent, mo);
+					getTriIndex(v2, lNormal, tangent, biTangent, mo);
+					getTriIndex(v3, lNormal, tangent, biTangent, mo);
 				}
 				
 				if(!invalid2){
-					getTriIndex(v1, lNormal, tangent, mo);
-					getTriIndex(v3, lNormal, tangent, mo);
-					getTriIndex(v4, lNormal, tangent, mo);
+					getTriIndex(v1, lNormal, tangent, biTangent, mo);
+					getTriIndex(v3, lNormal, tangent, biTangent, mo);
+					getTriIndex(v4, lNormal, tangent, biTangent, mo);
 				}
 			}
 		}else{
@@ -255,33 +248,33 @@ public class QuadExtractor {
 			//Vector3f lNormal = new Vector3f(normal).negateLocal();
 			if(!support){
 				if(!invalid1){
-					mo.triangles.add(getTriIndex(v1,lNormal,tangent,mo));
-					mo.triangles.add(getTriIndex(v3,lNormal,tangent,mo));
-					mo.triangles.add(getTriIndex(v2,lNormal,tangent,mo));
+					mo.triangles.add(getTriIndex(v1,lNormal,tangent, biTangent,mo));
+					mo.triangles.add(getTriIndex(v3,lNormal,tangent, biTangent,mo));
+					mo.triangles.add(getTriIndex(v2,lNormal,tangent, biTangent,mo));
 				}
 				
 				if(!invalid2){
-					mo.triangles.add(getTriIndex(v1,lNormal,tangent,mo));
-					mo.triangles.add(getTriIndex(v4,lNormal,tangent,mo));
-					mo.triangles.add(getTriIndex(v3,lNormal,tangent,mo));
+					mo.triangles.add(getTriIndex(v1,lNormal,tangent, biTangent,mo));
+					mo.triangles.add(getTriIndex(v4,lNormal,tangent, biTangent,mo));
+					mo.triangles.add(getTriIndex(v3,lNormal,tangent, biTangent,mo));
 				}
 			}else{
 				if(!invalid1){
-					getTriIndex(v1, lNormal, tangent, mo);
-					getTriIndex(v2, lNormal, tangent, mo);
-					getTriIndex(v3, lNormal, tangent, mo);
+					getTriIndex(v1, lNormal, tangent, biTangent, mo);
+					getTriIndex(v2, lNormal, tangent, biTangent, mo);
+					getTriIndex(v3, lNormal, tangent, biTangent, mo);
 				}
 				
 				if(!invalid2){
-					getTriIndex(v1, lNormal, tangent, mo);
-					getTriIndex(v3, lNormal, tangent, mo);
-					getTriIndex(v4, lNormal, tangent, mo);
+					getTriIndex(v1, lNormal, tangent, biTangent, mo);
+					getTriIndex(v3, lNormal, tangent, biTangent, mo);
+					getTriIndex(v4, lNormal, tangent, biTangent, mo);
 				}
 			}
 		}
 	}
 	
-	private static int getTriIndex(Vector3f v, Vector3f normal, Vector3f tangent, MeshOutput mo) {
+	private static int getTriIndex(Vector3f v, Vector3f normal, Vector3f tangent,Vector3f bitangent, MeshOutput mo) {
 		Integer i = mo.vToI.get(v);
 		if (i == null) {
 			i = mo.verticies.size();
@@ -290,51 +283,77 @@ public class QuadExtractor {
 			mo.verticies.add(v);
 			mo.vertexNormals.add(new Vector3f(normal));
 			mo.vertexTangents.add(new Vector3f(tangent));
+			mo.vertexBiTangents.add(new Vector3f(bitangent));
 		}else{
 			mo.vertexNormals.get(i).addLocal(normal);
 			mo.vertexTangents.get(i).addLocal(tangent);
+			mo.vertexBiTangents.get(i).addLocal(bitangent);
 		}
 		
+//		if(Math.abs(normal.dot(tangent)) > .001){
+//			System.out.println("Bitch i got problems.");
+//		}
 		
 		return i;
 	}
 
-	private static Vector2f generateUV(Vector3f v1, Vector3f normal) {
-		Vector2f texCoord = new Vector2f();
+	private static int generateUV(Vector3f v1, Vector3f normal,Vector2f store) {
+		int i = 0;
 		if (Math.abs(normal.y) > Math.abs(normal.z)) {
-			if (Math.abs(normal.y) > Math.abs(normal.x)) {// y dominate so
-															// quoods z,x
-				texCoord.set(v1.z, v1.x);
-			} else {// x dominate, quoods y,z
-				texCoord.set(v1.y, v1.z);
+			
+			//Y,Z dom -
+			
+			if (Math.abs(normal.y) > Math.abs(normal.x)) {// y dominate
+				if(Math.abs(normal.z) > Math.abs(normal.x)){
+					store.set(v1.x, v1.z);
+				}else{
+					store.set(v1.z, v1.x);
+				}
+				
+			} else {// x dominate
+				store.set(v1.y, v1.z);
 			}
 		} else {
-			if (Math.abs(normal.z) > Math.abs(normal.x)) { // z dominant,
-															// quoords y,x
-				texCoord.set(v1.y, v1.x);
+			if (Math.abs(normal.z) > Math.abs(normal.x)) { // z dominant
+				store.set(v1.y, v1.x);
 			} else { // x dominant y,z
-				texCoord.set(v1.y, v1.z);
+				store.set(v1.y, v1.z);
 			}
 		}
-		return texCoord;
+		return i;
 	}
 
-	private static Vector3f generateTangent(Vector3f v0, Vector3f v1, Vector3f v2, Vector2f uv0, Vector2f uv1, Vector2f uv2) {
+	private static void generateTangent(Vector3f v0, Vector3f v1, Vector3f v2,Vector3f normal, Vector3f tangent, Vector3f bitangent) {
 		// Edges of the triangle : postion delta
-		Vector3f deltaPos1 = v1.subtract(v0);
-		Vector3f deltaPos2 = v2.subtract(v0);
+//		System.out.println(uv0);
+//		System.out.println(uv1);
+//		System.out.println(uv2);
+		Vector2f uv0 = new Vector2f();
+		Vector2f uv1 = new Vector2f();
+		Vector2f uv2 = new Vector2f();
+		int a = generateUV(v0,normal,uv0);
+		generateUV(v1,normal,uv1);
+		generateUV(v2,normal,uv2);
+		
+		//Method from:
+		//http://www.terathon.com/code/tangent.html
+		
+		 float x1 = v1.x - v0.x;
+	     float x2 = v2.x - v0.x;
+	     float y1 = v1.y - v0.y;
+	     float y2 = v2.y - v0.y;
+	     float z1 = v1.z - v0.z;
+	     float z2 = v2.z - v0.z;
+	        
+	     float s1 = uv1.x - uv0.x;
+	     float s2 = uv2.x - uv0.x;
+	     float t1 = uv1.y - uv0.y;
+	     float t2 = uv2.y - uv0.y;
 
-		// UV delta
-		Vector2f deltaUV1 = uv1.subtract(uv0);
-		Vector2f deltaUV2 = uv2.subtract(uv0);
-
-		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-
-		// (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
-		Vector3f tangent = scale( scale(deltaPos1, deltaUV2.y).subtract( scale(deltaPos2, deltaUV1.y)), r);
-		// (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r
-		// Vector3f bitangent =  scale(scale(deltaPos2,deltaUV1.x).subtract(scale(deltaPos1, deltaUV2.x)),r);
-		return tangent.normalizeLocal();
+		float r = 1.0f / (s1 * t2 - s2 * t1);
+		
+		tangent.set((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+		bitangent.set((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 	}
 
 	private static Vector3f scale(Vector3f v, float f) {

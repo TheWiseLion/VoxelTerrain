@@ -1,8 +1,10 @@
 package VoxelSystem.VoxelObjects;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,44 +19,103 @@ import VoxelSystem.VoxelMaterials.VoxelType;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 
 public class PagingVoxelObject extends ExtractorBase{
-
+	private class QueuedExtraction{
+		QueuedExtraction(VoxelExtractor ve, VoxelNode w,BoundingBox bb){
+			this.vn = w;
+			this.ve = ve;
+			this.bb = bb;
+		}
+		BoundingBox bb;
+		VoxelExtractor ve;
+		VoxelNode vn;
+		public void preformExtraction(){
+			BoundingBox box = bb;
+			int vMin[] = new int[3];
+			int vMax[] = new int[3];
+			if(box != null){
+				Vector3f min = box.getMin(new Vector3f());
+				Vector3f max = box.getMax(new Vector3f());
+				vMin[0] = ((int) (min.x/voxelSize)) - 1;
+				vMin[1] = ((int) (min.y/voxelSize)) - 1;
+				vMin[2] = ((int) (min.z/voxelSize)) - 1;
+	
+				vMax[0] = ((int) (max.x/voxelSize)) + 1;
+				vMax[1] = ((int) (max.y/voxelSize)) + 1;
+				vMax[2] = ((int) (max.z/voxelSize)) + 1;
+			}else{
+				throw new RuntimeException("Herpy derpy");
+			}
+			
+			vn.extractVolume(ve,vMin,vMax);
+		}
+	}
+	
+	/**
+	 * Either a voxel extractor or
+	 * a operation (forms CSG tree)
+	 * @author 0xFFFF
+	 *
+	 */
+	private static class WorldLayer{
+		CSGOperator operator;
+		VoxelExtractor [] args;
+		WorldLayer(CSGOperator o,VoxelExtractor [] args){
+			this.operator = o;
+			this.args = args;
+		}
+		
+	}
+	
 	int bitOffSet = 10;
 	int CHUNK_MASK = 0x3FF;//10 bits -> ~1000 chunks
 	int CHUNK_OFF = CHUNK_MASK/2;
 	int CHUNK_DIM = 16;
 	private float voxelSize;
-	
+	private boolean debug;
+	Material debugMats[];
 	
 	/***
 	 * This stores decompressed chunks.
 	 * All of the chunk data exists.
 	 */
-	Map<Integer, VoxelNode> ChunkCache;
+	//Map<Integer, VoxelNode> ChunkCache;
 	
 	
 	/***
 	 * packed chunks
 	 */
 	Map<Integer, VoxelNode> chunks;
-	List<VoxelNode> dirtyNodes;
-	//private Map<Spatial, CSG-TREE> #holds functions that have not been fully generated
-	//private Map<Spatial, Chunk> #holds generated chunk data
+	
+	LinkedHashSet<VoxelNode> renderReadyNodes;
 	
 	
+	LinkedList<WorldLayer> worldLayers;//To be applied in order c.extract()c.extract()c.extract()....
+	
+	HashMap<Integer,Integer> chunkQueueStatus;//Maps chunk ID to # of extraction left to perform on it...
+	LinkedList<QueuedExtraction> extractionQueue;
+	
+	Vector3f loadDistance;
 	Map<Integer, VoxelType> materials;
 	//TODO: keep a list and recompute if overlap
 	
-	public PagingVoxelObject(float voxelSize, Map<Integer, VoxelType> iToM){
+	public PagingVoxelObject(float voxelSize, Map<Integer, VoxelType> iToM,Vector3f loadDistance){
 		this.voxelSize = voxelSize;
 		this.materials = iToM;
-		//
+		this.loadDistance = loadDistance;
 		
-		dirtyNodes = new ArrayList<VoxelNode>();
+		renderReadyNodes = new LinkedHashSet<VoxelNode>();
+		worldLayers = new LinkedList<WorldLayer>();
+		
+		extractionQueue = new LinkedList<QueuedExtraction>();
+		chunkQueueStatus = new HashMap<Integer,Integer>();
+		
+		
 		chunks = new HashMap<Integer, VoxelNode>();
 	}
 	
@@ -63,11 +124,31 @@ public class PagingVoxelObject extends ExtractorBase{
 				////	CORE FUNCTIONS	////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-	public List<Geometry> update(Node root){
-		List<Geometry> geo = new ArrayList<Geometry>();
-		if(dirtyNodes.size() > 0){
+	public void update(Node root, int maxWork){
 		
-			//Re-gen any dirty nodes
+		Iterator<QueuedExtraction> iter = extractionQueue.iterator();
+		while(maxWork > 0 && iter.hasNext()){
+			QueuedExtraction qe = iter.next();
+			qe.preformExtraction();
+			Integer i = chunkQueueStatus.get(qe.vn.hash);
+			i--;
+			
+			if(i == 0){
+				System.out.println("hi?");
+				chunkQueueStatus.remove(qe.vn.hash);
+				renderReadyNodes.add(qe.vn);
+			}else{
+				chunkQueueStatus.put(qe.vn.hash, i);
+			}
+			
+			iter.remove();
+			maxWork--;
+			System.out.println("Done: "+extractionQueue.size());
+		}
+		
+		
+		if(chunkQueueStatus.isEmpty() && renderReadyNodes.size() > 0){
+			System.out.println("Anything?: "+extractionQueue.size());
 			float error = (float) (Math.sqrt(3)*voxelSize / 1000f);
 			Vector3f cP[] = new Vector3f[]{
 				new Vector3f(),new Vector3f(),new Vector3f(),new Vector3f(),
@@ -82,13 +163,14 @@ public class PagingVoxelObject extends ExtractorBase{
 			List<Vector3f> edges = new ArrayList<Vector3f>();
 			int mats[] = new int[8];
 			
-			for(VoxelNode vn : dirtyNodes){
-				//Gen contours
+			for(VoxelNode vn : renderReadyNodes){
 				vn.genIsopoints(this, cP, edges, normals, mats, bb, error);
-			}	
+			}
 			
+			Iterator<VoxelNode> itor = renderReadyNodes.iterator();
 			
-			for(VoxelNode vn : dirtyNodes){
+			while(itor.hasNext()){
+				VoxelNode vn = itor.next();
 				//Remove any old meshes:
 				if(vn.generated!=null){
 					for(Geometry g : vn.generated){
@@ -96,72 +178,75 @@ public class PagingVoxelObject extends ExtractorBase{
 					}
 				}
 				
-				
-				//Mesh contours
+//				//Mesh contours
 				Map<Integer,MeshOutput> meshes = vn.genMesh(this, mats);
 				vn.generated = new ArrayList<Geometry>();
 				for(Integer i : meshes.keySet()){
 					MeshOutput mo = meshes.get(i);
-					Mesh m = mo.compile();
-					m.updateBound();
-					m.updateCounts();
-					if(m.getTriangleCount() > 0){
+					Mesh [] me = mo.compile(debug);
+					me[0].updateBound();
+					me[0].updateCounts();
+					if(me[0].getTriangleCount() > 0){
 						Geometry g = new Geometry();
-						g.setMesh(m);
+						g.setMesh(me[0]);
 						g.setMaterial(this.materials.get(i).material);
+						g.setShadowMode(ShadowMode.CastAndReceive);
 						vn.generated.add(g);
 						root.attachChild(g);
 					}
 				}
 				
-				for(Geometry g : vn.generated){
-//					root.attachChild(g);
-					geo.add(g);
-				}
+				itor.remove();
+//				for(Geometry g : vn.generated){
+//					geo.add(g);
+//				}
 				
 			}
 			
-			dirtyNodes.clear();
 		}
-		return geo;
 	}
 
-	public void set(VoxelExtractor ve){
-		BoundingBox box = ve.getBoundingBox();
-		Vector3f min = box.getMin(new Vector3f());
-		Vector3f max = box.getMax(new Vector3f());
-		
-		//TODO: infinite
-		int vMin[] = new int[3];
-		int vMax[] = new int[3];
-		vMin[0] = ((int) (min.x/voxelSize)) - 1;
-		vMin[1] = ((int) (min.y/voxelSize)) - 1;
-		vMin[2] = ((int) (min.z/voxelSize)) - 1;
-
-		vMax[0] = ((int) (max.x/voxelSize)) + 1;
-		vMax[1] = ((int) (max.y/voxelSize)) + 1;
-		vMax[2] = ((int) (max.z/voxelSize)) + 1;
-		
-		List<Integer> chunkKeys = this.chunksFromAABB(box);
-		for(int chunk : chunkKeys){
-			VoxelNode c = this.chunks.get(chunk);
-			if(c == null){
-				c = createChunkFromKey(chunk);
-			}
-			this.chunks.put(chunk,c);
-		}
-		
-		for(int chunk : chunkKeys){
-			VoxelNode c = this.chunks.get(chunk);
+//	public void set(VoxelExtractor ve){
+//		BoundingBox box = ve.getBoundingBox();
+//		if(box == null){
+//			worldLayers.add(ve);
+//			return;
+//		}
+//		
+//		Vector3f min = box.getMin(new Vector3f());
+//		Vector3f max = box.getMax(new Vector3f());
+//		
+//		
+//		int vMin[] = new int[3];
+//		int vMax[] = new int[3];
+//		vMin[0] = ((int) (min.x/voxelSize)) - 1;
+//		vMin[1] = ((int) (min.y/voxelSize)) - 1;
+//		vMin[2] = ((int) (min.z/voxelSize)) - 1;
+//
+//		vMax[0] = ((int) (max.x/voxelSize)) + 1;
+//		vMax[1] = ((int) (max.y/voxelSize)) + 1;
+//		vMax[2] = ((int) (max.z/voxelSize)) + 1;
+//		
+//		List<Integer> chunkKeys = this.chunksFromAABB(box);
+//		for(int chunk : chunkKeys){
+//			VoxelNode c = this.chunks.get(chunk);
 //			if(c == null){
 //				c = createChunkFromKey(chunk);
 //			}
-			
-			dirtyNodes.add(c);
-			c.extractVolume(ve, vMin, vMax);
-			this.chunks.put(chunk,c);
-		}
-	}
+//			this.chunks.put(chunk,c);
+//		}
+//		
+//		for(int chunk : chunkKeys){
+//			VoxelNode c = this.chunks.get(chunk);
+////			if(c == null){
+////				c = createChunkFromKey(chunk);
+////			}
+//			
+//			dirtyNodes.add(c);
+//			c.extractVolume(ve, vMin, vMax);
+//			this.chunks.put(chunk,c);
+//		}
+//	}
 	
 	
 	public VoxelNode getChunk(int x, int y, int z){
@@ -181,19 +266,11 @@ public class PagingVoxelObject extends ExtractorBase{
 	 */
 	public void preformOperation(CSGOperator operator, BoundingBox bb,VoxelExtractor ... args){
 		BoundingBox box = bb;
-		Vector3f min = box.getMin(new Vector3f());
-		Vector3f max = box.getMax(new Vector3f());
+		if(box == null){
+			
+			return;
+		}
 		
-		//TODO: infinite
-		int vMin[] = new int[3];
-		int vMax[] = new int[3];
-		vMin[0] = ((int) (min.x/voxelSize)) - 1;
-		vMin[1] = ((int) (min.y/voxelSize)) - 1;
-		vMin[2] = ((int) (min.z/voxelSize)) - 1;
-
-		vMax[0] = ((int) (max.x/voxelSize)) + 1;
-		vMax[1] = ((int) (max.y/voxelSize)) + 1;
-		vMax[2] = ((int) (max.z/voxelSize)) + 1;
 		
 		List<Integer> chunkKeys = this.chunksFromAABB(box);
 		for(int chunk : chunkKeys){
@@ -211,7 +288,6 @@ public class PagingVoxelObject extends ExtractorBase{
 			}
 		}
 		for(int chunk : chunkKeys){
-			
 			VoxelNode c = this.chunks.get(chunk);
 			
 			VoxelExtractor ve;
@@ -223,13 +299,39 @@ public class PagingVoxelObject extends ExtractorBase{
 				ve = operator.operate(args2);
 			}
 			
-			dirtyNodes.add(c);
-			c.extractVolume(ve, vMin, vMax);
-			this.chunks.put(chunk,c);
+			enqueChunk(new QueuedExtraction(ve, c,bb));
+//			dirtyNodes.add(c);
+//			c.extractVolume(ve, vMin, vMax);
+//			this.chunks.put(chunk,c);
 		}
 		
 	}
 	
+	public void enableDebugging(Material normalColor, Material tangentColor, Material bitangent){
+		debug = true;
+		debugMats = new Material[3];
+		debugMats[0] = normalColor;
+		debugMats[1] = normalColor;
+		debugMats[2] = normalColor;
+	}
+	
+	public void disableDebugging(){
+		debug = false;
+		debugMats = null;
+	}
+	
+	@Override
+	public BoundingBox getBoundingBox() {
+		return null;
+	}
+	
+	public float getVoxelSize(){
+		return voxelSize;
+	}
+	
+	public int getType(float x, float y, float z){
+		return getType((int)round(x/voxelSize), (int)round(y/voxelSize), (int)round(z/voxelSize));
+	}
 	
 /////////////////////////////////////////////////////////////////////////	
 /////////////////////////////////////////////////////////////////////////
@@ -237,6 +339,7 @@ public class PagingVoxelObject extends ExtractorBase{
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 	int getType(int wx, int wy, int wz){
+//		System.out.println("AIEOUU asking about:" +(wx*voxelSize) +","+(wy*voxelSize)+","+(wz*voxelSize));
 		int chunkX = (int) Math.floor((double)wx/CHUNK_DIM);
 		int chunkY = (int) Math.floor((double)wy/CHUNK_DIM);
 		int chunkZ = (int) Math.floor((double)wz/CHUNK_DIM);
@@ -321,8 +424,8 @@ public class PagingVoxelObject extends ExtractorBase{
 		int maxY = ((int) (max.y/voxelSize)) + 1;
 		int maxZ = ((int) (max.z/voxelSize)) + 1;
 		
-		min.divideLocal(voxelSize);
-		max.divideLocal(voxelSize);
+//		min.divideLocal(voxelSize);
+//		max.divideLocal(voxelSize);
 		
 		//Then clamp to chunk space (rounding up)
 		minX = roundChunkF(minX);
@@ -351,7 +454,7 @@ public class PagingVoxelObject extends ExtractorBase{
 		if(x < 0){
 			return (int) -Math.ceil(-x);
 		}else{
-			return (int) Math.floor(x);
+			return (int) x;//Math.floor(x);
 		}
 		
 	}
@@ -362,6 +465,12 @@ public class PagingVoxelObject extends ExtractorBase{
 				((z+CHUNK_OFF) << (bitOffSet*2));
 	}
 	
+	/***
+	 * Creates and queue's new chunk
+	 * (aka queues anything in world base)
+	 * @param key
+	 * @return
+	 */
 	private VoxelNode createChunkFromKey(int key){
 		int oX = (key & CHUNK_MASK);
 		int oY = ((key>>bitOffSet) & CHUNK_MASK);
@@ -375,9 +484,20 @@ public class PagingVoxelObject extends ExtractorBase{
 		oY *= CHUNK_DIM;
 		oZ *= CHUNK_DIM;
 		
-		return new VoxelNode(oX, oY, oZ, CHUNK_DIM, CHUNK_DIM, CHUNK_DIM, voxelSize);	
+		return new VoxelNode(oX, oY, oZ, CHUNK_DIM, CHUNK_DIM, CHUNK_DIM, voxelSize,key);	
 	}
 
+//	private VoxelNode createAndQueueChunk(int key){
+//		VoxelNode vn = createChunkFromKey(key);
+//		for(WorldLayer ve : worldLayers){
+//			
+//			
+//			
+//			
+//		}
+//		return vn;
+//	}
+	
 	
 	private int round(float x){
 		int r;
@@ -438,10 +558,50 @@ public class PagingVoxelObject extends ExtractorBase{
 		
 		
 	}
-
-	@Override
-	public BoundingBox getBoundingBox() {
-		return null;
+	
+	/**
+	 * Adds operation to queue for all active chunks
+	 * @param ve
+	 */
+	private void queueAllNodes(VoxelExtractor ve){
+		for(VoxelNode vn : chunks.values()){
+			enqueChunk(new QueuedExtraction(ve,vn,ve.getBoundingBox()));
+		}
 	}
 	
+	private void enqueChunk(QueuedExtraction qe){
+		
+		Integer i = chunkQueueStatus.get(qe.vn.hash);
+		if(i == null){
+			i = 1;
+		}else{
+			i++;
+		}
+		chunkQueueStatus.put(qe.vn.hash, i);
+		extractionQueue.add(qe);
+	}
+
+//	private void addChunks(Vector3f pos){
+//		//Get voxel position of pos
+//		int x = (int) (pos.x/voxelSize);
+//		int y = (int) (pos.y/voxelSize);
+//		int z = (int) (pos.z/voxelSize);
+//		
+//		//Get voxel dim of load distance
+//		BoundingBox bb = new BoundingBox();
+//		bb.setCenter(pos);
+//		bb.setMinMax(new Vector3f(loadDistance).negateLocal(), pos.add(loadDistance));
+//		//get, create, and queue any new chunks
+//		List<Integer> chunkIds = chunksFromAABB(bb);
+//		for(Integer i : chunkIds){
+//			if(!chunks.containsKey(i)){
+//				
+//			}
+//		}
+//		
+//	}
+	
+	
+			
+			
 }

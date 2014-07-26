@@ -52,34 +52,44 @@ public class Materials {
     	//Initialize Materials:
     	Material rockMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		rockMaterial.setTexture("DiffuseMap", textures[0]);
-		rockMaterial.setTexture("NormalMap", textures[1]);
-		rockMaterial.setTexture("SpecularMap", textures[2]);
+		rockMaterial.setTexture("NormalMap", textures[2]);
+		rockMaterial.setTexture("SpecularMap", textures[1]);
+		
+		
 		
 		
 		Material sandMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		sandMaterial.setTexture("DiffuseMap", textures[3]);
-		sandMaterial.setTexture("NormalMap", textures[4]);
-		sandMaterial.setTexture("SpecularMap", textures[5]);
+		sandMaterial.setTexture("SpecularMap", textures[4]);
+		sandMaterial.setTexture("NormalMap", textures[5]);
+		
 		
 		Material lavaMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		lavaMaterial.setTexture("DiffuseMap", textures[6]);
-		lavaMaterial.setTexture("NormalMap", textures[7]);
-		lavaMaterial.setTexture("SpecularMap", textures[8]);
+		lavaMaterial.setTexture("SpecularMap", textures[7]);
+		lavaMaterial.setTexture("NormalMap", textures[8]);
+		lavaMaterial.setFloat("Shininess", 30);
 		
 		Material mudMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		mudMaterial.setTexture("DiffuseMap", textures[9]);
-		mudMaterial.setTexture("NormalMap", textures[10]);
-		mudMaterial.setTexture("SpecularMap", textures[11]);
+		mudMaterial.setTexture("SpecularMap", textures[10]);
+		mudMaterial.setTexture("NormalMap", textures[11]);
+		mudMaterial.setFloat("Shininess", 30);
+		
 		
 		Material stonePlateMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		stonePlateMaterial.setTexture("DiffuseMap", textures[12]);
-		stonePlateMaterial.setTexture("NormalMap", textures[13]);
-		stonePlateMaterial.setTexture("SpecularMap", textures[14]);
+		stonePlateMaterial.setTexture("SpecularMap", textures[13]);
+		stonePlateMaterial.setTexture("NormalMap", textures[14]);
+		stonePlateMaterial.setFloat("Shininess", 30);
+		
 		
 		Material blackPebbleMaterial = new Material(assetManager, "Shaders/VoxelMaterial.j3md"); 
 		blackPebbleMaterial.setTexture("DiffuseMap", textures[15]);
-		blackPebbleMaterial.setTexture("NormalMap", textures[16]);
-		blackPebbleMaterial.setTexture("SpecularMap", textures[17]);
+		blackPebbleMaterial.setTexture("SpecularMap", textures[16]);
+		blackPebbleMaterial.setTexture("NormalMap", textures[17]);
+		blackPebbleMaterial.setFloat("Shininess", 30);
+		
 		
 		// Initialize Voxel Materials:
 		Map<Integer,VoxelType> types = new HashMap<Integer,VoxelType>();

@@ -23,6 +23,7 @@ import com.jme3.scene.Geometry;
  */
 public class VoxelNode extends Chunk{
 	public final int vOffX, vOffY, vOffZ;
+	public final int hash;
 	Map<Integer,Vector3f> isoPoints;
 	List<Geometry> generated;
 	
@@ -30,7 +31,7 @@ public class VoxelNode extends Chunk{
 	/****
 	 * Takes world space voxel off sets (vOffX, vOffY, vOffZ) which defines lower left corner.
 	 */
-	public VoxelNode(int vOffX,int vOffY,int vOffZ, int width, int height, int depth, float vSize) {
+	public VoxelNode(int vOffX,int vOffY,int vOffZ, int width, int height, int depth, float vSize,int hash) {
 		super(null, width, height, depth, vSize);
 		this.corner = new Vector3f(vOffX * vSize, vOffY * vSize, vOffZ * vSize);
 //		this.owner=pvo;
@@ -39,6 +40,7 @@ public class VoxelNode extends Chunk{
 		this.vOffX = vOffX;
 		this.vOffY = vOffY;
 		this.vOffZ = vOffZ;
+		this.hash = hash;
 	}
 	
 	@Override

@@ -41,12 +41,13 @@ import java.util.Map;
 import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
 import VoxelSystem.DensityVolumes.Shapes.NoiseShape;
 import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.DensityVolumes.Shapes.VolumeShape;
 import VoxelSystem.Operators.CSGOperators;
 import VoxelSystem.VoxelData.VoxelDensityExtractor;
 import VoxelSystem.VoxelData.VoxelExtractor;
 import VoxelSystem.VoxelMaterials.VoxelType;
 import VoxelSystem.VoxelObjects.PagingVoxelObject;
+import VoxelSystem.VoxelObjects.Physics;
+import VoxelSystem.VoxelObjects.Physics.HitData;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.ScreenshotAppState;
@@ -182,13 +183,16 @@ public class GSoC_DEMO extends SimpleApplication {
     	Material green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
     	green.setColor("Color", ColorRGBA.Green);
     	
-    	world = new PagingVoxelObject(res, materialTypes);
-    	VolumeShape vs = new NoiseShape();
-    	vs.setSimpleType(1);
-    	world.set(new VoxelDensityExtractor(vs));
+    	world = new PagingVoxelObject(res, materialTypes, new Vector3f(50,50,50));
+//    	VolumeShape vs = new NoiseShape();
+//    	vs.setSimpleType(1);
     	
+    	VoxelExtractor ve =new VoxelDensityExtractor(new NoiseShape(res));
+    	
+    	world.preformOperation(CSGOperators.unionOverwrite, ve.getBoundingBox(), ve);
+//    	
 //    	world.preformOperation(CSGOperators.unionOverwrite, sphereExtractor3.getBoundingBox(), sphereExtractor3);
-    	worldGen = world.update(rootNode);
+    	world.update(rootNode,1000);
     	
 //    	Vector3f borken = new Vector3f(15.116098f, 2.7305896f, 14.761848f);
 //    	BoxVolume bv = new BoxVolume(borken,2f,2f,2f);
@@ -261,7 +265,7 @@ public class GSoC_DEMO extends SimpleApplication {
     	iToM.put(1, blue);
     	iToM.put(2, red);
   
-        
+    	
     	flyCam.setMoveSpeed(10);
         cam.setLocation(new Vector3f(14.81f,2.7f,14.4f));
         
@@ -309,25 +313,39 @@ public class GSoC_DEMO extends SimpleApplication {
         selectedMaterialN.setText("Selected Material: "+selectedMaterial);
         counter+=tpf;
         selectedMaterial = selectedMaterial%6;
+        world.update(rootNode,10);
         
         if(input.addDown && operationWaitTime < counter){
+//        	HitData hd = Physics.collideRay(world, cam.getLocation(), cam.getDirection(), 100, world.getVoxelSize());
+//        	System.out.println(hd.impact);
+        	Vector3f voxelBase = new Vector3f(cam.getLocation());
+        	float v = world.getVoxelSize();
+        	voxelBase.x = ((int)(voxelBase.x/v))*v;
+        	voxelBase.y = ((int)(voxelBase.y/v))*v;
+        	voxelBase.z = ((int)(voxelBase.z/v))*v;
+        	
 //        	SphereVolume bv = new SphereVolume(cam.getLocation(),10);
         	float f = FastMath.nextRandomFloat()*3f+1;
-        	BoxVolume bv = new BoxVolume(cam.getLocation(),2,2,2); 
+        	BoxVolume bv = new BoxVolume(voxelBase,2,2,2); 
         	bv.setSimpleType(selectedMaterial);
         	long init = System.currentTimeMillis();
-//        	world.set();
         	world.preformOperation(CSGOperators.unionNoOverwrite,bv.getEffectiveVolume(),CSGOperators.makeCubed(new VoxelDensityExtractor(bv)));
-        	world.update(rootNode);
-        	System.out.println((System.currentTimeMillis()-init));
-//        	input.addDown = false;
-        	operationWaitTime = counter + 1f;
+//        	
+//        	System.out.println((System.currentTimeMillis()-init));
+        	input.addDown = false;
+//        	operationWaitTime = counter + .15f;
 //        	System.out.println(""+bv.count +" : "+bv.count2);
         }
-        
+//        
         if(input.removeDown){
+        	Vector3f voxelBase = new Vector3f(cam.getLocation());
+        	float v = world.getVoxelSize();
+        	voxelBase.x = ((int)(voxelBase.x/v))*v;
+        	voxelBase.y = ((int)(voxelBase.y/v))*v;
+        	voxelBase.z = ((int)(voxelBase.z/v))*v;
+        	
         	float f = FastMath.nextRandomFloat()*3f+1;
-        	BoxVolume bv = new BoxVolume(cam.getLocation(),f,f,f); 
+        	BoxVolume bv = new BoxVolume(voxelBase,2,2,2); 
         	bv.setSimpleType(selectedMaterial);
         	long init = System.currentTimeMillis();
 //        	world.set();
@@ -335,7 +353,6 @@ public class GSoC_DEMO extends SimpleApplication {
         	System.out.println((System.currentTimeMillis()-init));
 //        	input.addDown = false;
         	operationWaitTime = counter + .15f;
-        	world.update(rootNode);
         }
         
         updateBalls();
@@ -414,14 +431,14 @@ public class GSoC_DEMO extends SimpleApplication {
 	  //Intialize Lights
 	  DirectionalLight sun2 = new DirectionalLight();
       sun2.setColor(ColorRGBA.White);
-      sun2.setDirection(new Vector3f(0.408248f, 0.408248f, 0.816497f).normalizeLocal());
+      sun2.setDirection(new Vector3f(0.408248f, 0.408248f, 0.816497f).normalizeLocal().negate());
       rootNode.addLight(sun2);
       
       /* Drop shadows */
       final int SHADOWMAP_SIZE=1024;
       DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
       dlsr.setLight(sun2);
-      dlsr.setShadowIntensity(.5f);
+      dlsr.setShadowIntensity(.25f);
       viewPort.addProcessor(dlsr);
       dlsr.setEnabledStabilization(true);
       dlsr.setEdgeFilteringMode(EdgeFilteringMode.PCFPOISSON);
@@ -429,7 +446,7 @@ public class GSoC_DEMO extends SimpleApplication {
       dlsr.setLambda(1.03f);
       
       AmbientLight al = new AmbientLight();
-      al.setColor(ColorRGBA.White.mult(1.3f));
+      al.setColor(ColorRGBA.White.mult(1.55f));
       rootNode.addLight(al);
 
       //Initialize Textures.

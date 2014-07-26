@@ -115,7 +115,6 @@ public class DiscreteDensityVolume implements DiscreteVolume{
 	 */
 	public Vector3f getSurfaceNormal(float x, float y, float z) {
 		float d = gridScale; 
-
         double nx = trilinear(x + d, y, z) - trilinear(x - d, y, z);
         double ny = trilinear(x, y + d, z) - trilinear(x, y - d, z);
         double nz = trilinear(x, y, z + d) - trilinear(x, y, z - d);

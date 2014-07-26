@@ -9,6 +9,10 @@ public class NoiseShape extends VolumeShape{
 	int dimX = 40;
 	int dimY = 20;
 	int dimZ = 40;
+	float d;
+	public NoiseShape(float res){
+		this.d = res;
+	}
 	
 	
 	@Override
@@ -43,12 +47,12 @@ public class NoiseShape extends VolumeShape{
 //			return 0;
 //		}
 		
-		int octaves = 7;
+		int octaves = 5;
 		float d = 0;
 		float base = .5f;
-		float multiplier = 3f;
-		float baseFreq = 2f;
-		float FreqMultiplier = .5f;
+		float multiplier = 2f;
+		float baseFreq = 10f;
+		float FreqMultiplier = 2f;
 		
 		//"Mountain" octave: Low Frequency high octave
 		for(int i = 0; i< octaves;i++){
@@ -86,9 +90,9 @@ public class NoiseShape extends VolumeShape{
 //			return -1;
 //		}else 
 		if(d > y){
-			return (float) 1;	
+			return d-y;	
 		}else{
-			return -1;
+			return d-y;
 		}
 //		float yIso = (float) (5*Math.sin(x/5) + 5*Math.sin(z/5));
 //		
@@ -97,8 +101,13 @@ public class NoiseShape extends VolumeShape{
 
 	@Override
 	public Vector3f getSurfaceNormal(float x, float y, float z) {
-		// TODO Auto-generated method stub
-		return new Vector3f(0,0,0);
+		//Bilinear:
+		double nx = getDensity(x + d, y, z) - getDensity(x - d, y, z);
+	    double ny = getDensity(x, y + d, z) - getDensity(x, y - d, z);
+	    double nz = getDensity(x, y, z + d) - getDensity(x, y, z - d);
+	 
+	    Vector3f normal = new Vector3f((float)-nx, (float)-ny, (float)-nz);
+	    return normal.normalizeLocal();
 	}
 
 	@Override
