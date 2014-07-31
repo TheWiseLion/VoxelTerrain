@@ -168,7 +168,7 @@ public class CSGOperators {
 	public static CSGOperator makeCubed = new CSGOperator() {
 		@Override
 		public VoxelExtractor operate(VoxelExtractor... arguements) {
-			return CSGOperators.difference(arguements);
+			return CSGOperators.makeCubed(arguements[0]);
 		}
 	};
 	

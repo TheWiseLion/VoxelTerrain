@@ -2,9 +2,7 @@ package VoxelSystem.VoxelObjects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,8 +49,10 @@ public class PagingVoxelObject extends ExtractorBase{
 			}else{
 				throw new RuntimeException("Herpy derpy");
 			}
-			
-			vn.extractVolume(ve,vMin,vMax);
+			VoxelNode other = vn.deepCopy();
+			other.extractVolume(ve,vMin,vMax);
+			vn.copy(other);
+//			vn.extractVolume(ve, vMin, vMax);
 		}
 	}
 	
@@ -90,15 +90,15 @@ public class PagingVoxelObject extends ExtractorBase{
 	/***
 	 * packed chunks
 	 */
-	Map<Integer, VoxelNode> chunks;
+	public Map<Integer, VoxelNode> chunks;
 	
-	LinkedHashSet<VoxelNode> renderReadyNodes;
+	public LinkedHashSet<VoxelNode> renderReadyNodes;
 	
 	
-	LinkedList<WorldLayer> worldLayers;//To be applied in order c.extract()c.extract()c.extract()....
+//	LinkedList<WorldLayer> worldLayers;//To be applied in order c.extract()c.extract()c.extract()....
 	
-	HashMap<Integer,Integer> chunkQueueStatus;//Maps chunk ID to # of extraction left to perform on it...
-	LinkedList<QueuedExtraction> extractionQueue;
+//	HashMap<Integer,Integer> chunkQueueStatus;//Maps chunk ID to # of extraction left to perform on it...
+//	LinkedList<QueuedExtraction> extractionQueue;
 	
 	Vector3f loadDistance;
 	Map<Integer, VoxelType> materials;
@@ -110,10 +110,10 @@ public class PagingVoxelObject extends ExtractorBase{
 		this.loadDistance = loadDistance;
 		
 		renderReadyNodes = new LinkedHashSet<VoxelNode>();
-		worldLayers = new LinkedList<WorldLayer>();
-		
-		extractionQueue = new LinkedList<QueuedExtraction>();
-		chunkQueueStatus = new HashMap<Integer,Integer>();
+//		worldLayers = new LinkedList<WorldLayer>();
+//		
+//		extractionQueue = new LinkedList<QueuedExtraction>();
+//		chunkQueueStatus = new HashMap<Integer,Integer>();
 		
 		
 		chunks = new HashMap<Integer, VoxelNode>();
@@ -126,29 +126,8 @@ public class PagingVoxelObject extends ExtractorBase{
 /////////////////////////////////////////////////////////////////////////
 	public void update(Node root, int maxWork){
 		
-		Iterator<QueuedExtraction> iter = extractionQueue.iterator();
-		while(maxWork > 0 && iter.hasNext()){
-			QueuedExtraction qe = iter.next();
-			qe.preformExtraction();
-			Integer i = chunkQueueStatus.get(qe.vn.hash);
-			i--;
-			
-			if(i == 0){
-				System.out.println("hi?");
-				chunkQueueStatus.remove(qe.vn.hash);
-				renderReadyNodes.add(qe.vn);
-			}else{
-				chunkQueueStatus.put(qe.vn.hash, i);
-			}
-			
-			iter.remove();
-			maxWork--;
-			System.out.println("Done: "+extractionQueue.size());
-		}
 		
-		
-		if(chunkQueueStatus.isEmpty() && renderReadyNodes.size() > 0){
-			System.out.println("Anything?: "+extractionQueue.size());
+		if(renderReadyNodes.size() > 0){
 			float error = (float) (Math.sqrt(3)*voxelSize / 1000f);
 			Vector3f cP[] = new Vector3f[]{
 				new Vector3f(),new Vector3f(),new Vector3f(),new Vector3f(),
@@ -163,22 +142,21 @@ public class PagingVoxelObject extends ExtractorBase{
 			List<Vector3f> edges = new ArrayList<Vector3f>();
 			int mats[] = new int[8];
 			
+			
+			
 			for(VoxelNode vn : renderReadyNodes){
 				vn.genIsopoints(this, cP, edges, normals, mats, bb, error);
 			}
 			
-			Iterator<VoxelNode> itor = renderReadyNodes.iterator();
 			
-			while(itor.hasNext()){
-				VoxelNode vn = itor.next();
-				//Remove any old meshes:
+			for(VoxelNode vn : renderReadyNodes){
+				
 				if(vn.generated!=null){
 					for(Geometry g : vn.generated){
 						root.detachChild(g);
 					}
 				}
 				
-//				//Mesh contours
 				Map<Integer,MeshOutput> meshes = vn.genMesh(this, mats);
 				vn.generated = new ArrayList<Geometry>();
 				for(Integer i : meshes.keySet()){
@@ -195,59 +173,13 @@ public class PagingVoxelObject extends ExtractorBase{
 						root.attachChild(g);
 					}
 				}
-				
-				itor.remove();
-//				for(Geometry g : vn.generated){
-//					geo.add(g);
-//				}
-				
 			}
-			
 		}
+		
+		renderReadyNodes.clear();
+		
+		
 	}
-
-//	public void set(VoxelExtractor ve){
-//		BoundingBox box = ve.getBoundingBox();
-//		if(box == null){
-//			worldLayers.add(ve);
-//			return;
-//		}
-//		
-//		Vector3f min = box.getMin(new Vector3f());
-//		Vector3f max = box.getMax(new Vector3f());
-//		
-//		
-//		int vMin[] = new int[3];
-//		int vMax[] = new int[3];
-//		vMin[0] = ((int) (min.x/voxelSize)) - 1;
-//		vMin[1] = ((int) (min.y/voxelSize)) - 1;
-//		vMin[2] = ((int) (min.z/voxelSize)) - 1;
-//
-//		vMax[0] = ((int) (max.x/voxelSize)) + 1;
-//		vMax[1] = ((int) (max.y/voxelSize)) + 1;
-//		vMax[2] = ((int) (max.z/voxelSize)) + 1;
-//		
-//		List<Integer> chunkKeys = this.chunksFromAABB(box);
-//		for(int chunk : chunkKeys){
-//			VoxelNode c = this.chunks.get(chunk);
-//			if(c == null){
-//				c = createChunkFromKey(chunk);
-//			}
-//			this.chunks.put(chunk,c);
-//		}
-//		
-//		for(int chunk : chunkKeys){
-//			VoxelNode c = this.chunks.get(chunk);
-////			if(c == null){
-////				c = createChunkFromKey(chunk);
-////			}
-//			
-//			dirtyNodes.add(c);
-//			c.extractVolume(ve, vMin, vMax);
-//			this.chunks.put(chunk,c);
-//		}
-//	}
-	
 	
 	public VoxelNode getChunk(int x, int y, int z){
 		int key = hash(x, y, z);
@@ -271,38 +203,42 @@ public class PagingVoxelObject extends ExtractorBase{
 			return;
 		}
 		
+		Vector3f min = box.getMin(new Vector3f());
+		Vector3f max = box.getMax(new Vector3f());
+		int [] vMax = new int[3];
+		int [] vMin = new int[3];
+		
+		vMin[0] = ((int) (min.x/voxelSize)) - 1;
+		vMin[1] = ((int) (min.y/voxelSize)) - 1;
+		vMin[2] = ((int) (min.z/voxelSize)) - 1;
+
+		vMax[0] = ((int) (max.x/voxelSize)) + 1;
+		vMax[1] = ((int) (max.y/voxelSize)) + 1;
+		vMax[2] = ((int) (max.z/voxelSize)) + 1;
+		
 		
 		List<Integer> chunkKeys = this.chunksFromAABB(box);
-		for(int chunk : chunkKeys){
-			VoxelNode c = this.chunks.get(chunk);
-			if(c == null){
-				c = createChunkFromKey(chunk);
-			}
-			this.chunks.put(chunk,c);
-		}
-		
 		VoxelExtractor [] args2 = new VoxelExtractor[args.length+1]; 
 		if(args != null){
 			for(int i=0; i< args.length; i++){
-				args2[i+1]=args[0];
+				args2[i+1]=args[i];
 			}
 		}
+		
 		for(int chunk : chunkKeys){
 			VoxelNode c = this.chunks.get(chunk);
 			
-			VoxelExtractor ve;
-			if(args == null){
-				args2[0]=this;
-				ve = operator.operate(args2);
-			}else{
-				args2[0]=this;
-				ve = operator.operate(args2);
+			if(c == null){
+				c = createChunkFromKey(chunk);
+				this.chunks.put(chunk,c);
 			}
 			
-			enqueChunk(new QueuedExtraction(ve, c,bb));
-//			dirtyNodes.add(c);
-//			c.extractVolume(ve, vMin, vMax);
-//			this.chunks.put(chunk,c);
+			
+			VoxelExtractor ve;
+			args2[0]=this;
+			ve = operator.operate(args2);
+			c.extractVolume(ve,  vMin, vMax);
+			this.renderReadyNodes.add(c);
 		}
 		
 	}
@@ -432,9 +368,9 @@ public class PagingVoxelObject extends ExtractorBase{
 		minY = roundChunkF(minY);
 		minZ = roundChunkF(minZ);
 		
-		maxX = roundChunkF(maxX);
-		maxY = roundChunkF(maxY);
-		maxZ = roundChunkF(maxZ);
+		maxX = roundChunkU(maxX);
+		maxY = roundChunkU(maxY);
+		maxZ = roundChunkU(maxZ);
 		
 		//Then iterate over all the chunks...]
 		ArrayList<Integer> chunks = new ArrayList<Integer>();
@@ -451,12 +387,12 @@ public class PagingVoxelObject extends ExtractorBase{
 	
 	private int roundChunkF(int c){
 		float x = (float)c/CHUNK_DIM;
-		if(x < 0){
-			return (int) -Math.ceil(-x);
-		}else{
-			return (int) x;//Math.floor(x);
-		}
-		
+		return (int) Math.floor(x);
+	}
+	
+	private int roundChunkU(int c){
+		float x = (float)c/CHUNK_DIM;
+		return (int) Math.ceil(x);
 	}
 	
 	private int hash(int x, int y, int z){
@@ -486,18 +422,6 @@ public class PagingVoxelObject extends ExtractorBase{
 		
 		return new VoxelNode(oX, oY, oZ, CHUNK_DIM, CHUNK_DIM, CHUNK_DIM, voxelSize,key);	
 	}
-
-//	private VoxelNode createAndQueueChunk(int key){
-//		VoxelNode vn = createChunkFromKey(key);
-//		for(WorldLayer ve : worldLayers){
-//			
-//			
-//			
-//			
-//		}
-//		return vn;
-//	}
-	
 	
 	private int round(float x){
 		int r;
@@ -559,47 +483,7 @@ public class PagingVoxelObject extends ExtractorBase{
 		
 	}
 	
-	/**
-	 * Adds operation to queue for all active chunks
-	 * @param ve
-	 */
-	private void queueAllNodes(VoxelExtractor ve){
-		for(VoxelNode vn : chunks.values()){
-			enqueChunk(new QueuedExtraction(ve,vn,ve.getBoundingBox()));
-		}
-	}
-	
-	private void enqueChunk(QueuedExtraction qe){
-		
-		Integer i = chunkQueueStatus.get(qe.vn.hash);
-		if(i == null){
-			i = 1;
-		}else{
-			i++;
-		}
-		chunkQueueStatus.put(qe.vn.hash, i);
-		extractionQueue.add(qe);
-	}
 
-//	private void addChunks(Vector3f pos){
-//		//Get voxel position of pos
-//		int x = (int) (pos.x/voxelSize);
-//		int y = (int) (pos.y/voxelSize);
-//		int z = (int) (pos.z/voxelSize);
-//		
-//		//Get voxel dim of load distance
-//		BoundingBox bb = new BoundingBox();
-//		bb.setCenter(pos);
-//		bb.setMinMax(new Vector3f(loadDistance).negateLocal(), pos.add(loadDistance));
-//		//get, create, and queue any new chunks
-//		List<Integer> chunkIds = chunksFromAABB(bb);
-//		for(Integer i : chunkIds){
-//			if(!chunks.containsKey(i)){
-//				
-//			}
-//		}
-//		
-//	}
 	
 	
 			

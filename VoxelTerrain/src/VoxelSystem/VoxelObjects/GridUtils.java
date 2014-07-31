@@ -36,14 +36,6 @@ public class GridUtils {
 		maxY -= c.vOffY; maxY = Math.min(maxY, c.height);
 		maxZ -= c.vOffZ; maxZ = Math.min(maxZ, c.depth);
 		
-//		boolean overlapX = (minX <= c.width && maxX >= c.width + 1);
-//		boolean overlapY = (minY <= c.width && maxY >= c.width + 1);
-//		boolean overlapZ = (minZ <= c.width && maxZ >= c.width + 1);
-		
-		
-//		maxX = Math.min(maxX, c.width);
-//		maxY = Math.min(maxY, c.height);
-//		maxZ = Math.min(maxZ, c.depth);
 		
 		Vector3f qP1 = new Vector3f();
 		Vector3f qP2 = new Vector3f();
@@ -55,7 +47,7 @@ public class GridUtils {
 				for (int y = minY; y < maxY; y++) {
 					qP1.y = p.y + y * vSize;
 					
-//					int tx = -5,ty=-5,tz = 15;//-5,-5,15
+//					int tx = -2, ty=0, tz = -1;//Entry -2,0,-1
 //					if(x+c.vOffX == tx &&  y+c.vOffY == ty && z+c.vOffZ == tz){
 //						System.out.println("Entry");
 //					}else if(x+c.vOffX == tx &&  y+c.vOffY == ty && z+c.vOffZ == tz+1){

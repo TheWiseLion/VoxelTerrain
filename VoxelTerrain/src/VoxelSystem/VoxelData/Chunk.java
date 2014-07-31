@@ -51,8 +51,8 @@ public class Chunk extends ExtractorBase implements VoxelGrid{
 	protected int [][][] types;
 	
 	//TODO: HermiteEdge instead.
-	private Map<Pair, Float> intersections; 
-	private Map<Pair, Vector3f> normals;
+	protected Map<Pair, Float> intersections; 
+	protected Map<Pair, Vector3f> normals;
 	
 	public Chunk(Vector3f corner, int width,int height,int depth, float size){
 		this.width = width;

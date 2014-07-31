@@ -80,9 +80,38 @@ public class VoxelNode extends Chunk{
 	public int getType(int x, int y, int z) {
 		return this.types[x][y][z];
 	}
+	
+	public VoxelNode deepCopy(){
+		VoxelNode vn = new VoxelNode(this.vOffX, this.vOffY, this.vOffZ, this.width, this.height, this.depth, this.vSize, this.hash);
+		
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int z = 0; z < depth; z++) {
+					vn.setType(x, y, z, this.getType(x, y, z));
+				}
+			}
+		}
+		
+		for(Pair p : this.intersections.keySet()){
+			vn.intersections.put(p,this.intersections.get(p));
+			vn.normals.put(p,this.normals.get(p));
+		}
+		
+		
+		
+		return vn;
+	}
+	
+	public void copy(VoxelNode vn){
+		this.intersections = vn.intersections;
+		this.types = vn.types;
+		this.normals = vn.normals;
+	}
+	
 
 	@Override
 	public BoundingBox getBoundingBox() {
+//		return new BoundingBox(corner, corner.add( (float) (width-1)*vSize, (float) (height-1)*vSize,(float) (depth-1) * vSize));
 		throw new RuntimeException("Thall shall not call.");
 	}
 	
@@ -160,7 +189,8 @@ public class VoxelNode extends Chunk{
 					normals[0] = getNormal(x+1, y, z+1, AXIS.Y, n, pvo); //edge 5
 					normals[1] = getNormal(x, y+1, z+1, AXIS.X, n, pvo); //edge 6
 					normals[2] = getNormal(x+1, y+1, z, AXIS.Z, n, pvo); //edge 10
-					boolean support = x<0 || y < 0 || z<0 || x==width || y == height || z == depth;
+					boolean support =  x==width || y == height || z == depth || x == -1 || z == -1 || y == -1;
+//					support = support || (x == -1 && y== -1) || (y==-1 && z==-1)|| (z==-1 && x==-1);
 					
 					getTriangles(cube000,cube100,cube010,cube001,cube110,cube101,cube011,materials,normals,meshOutputs,support);
 				}

@@ -5,6 +5,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 
 /***
@@ -48,10 +49,18 @@ public class Input {
 	    inputManager.addMapping("showMaterial", new KeyTrigger(KeyInput.KEY_P));
 	    inputManager.addMapping("showQuads", new KeyTrigger(KeyInput.KEY_O));
 	    inputManager.addMapping("showTriangles", new KeyTrigger(KeyInput.KEY_I));
+	    
+	    inputManager.addMapping("LArrow", new KeyTrigger(KeyInput.KEY_LEFT));
+	    inputManager.addMapping("RArrow", new KeyTrigger(KeyInput.KEY_RIGHT));
+	    
+	    inputManager.addMapping("scrollUp", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));//new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true)
+	    inputManager.addMapping("scrollDown",new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));//new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true)
+	    
+	    
 	    // Add the names to the action listener.
 	    inputManager.addListener(actionListener,"Up","lighting","Down","lambdaUp","lambdaDown",
-	    		"edgeUp","edgeDown","ShootBalls","LeftMouse","RightMouse","Run","toggleNormal","showMaterial","showQuads","showTriangles");
-	    
+	    		"edgeUp","edgeDown","ShootBalls","LeftMouse","RightMouse","Run", "scrollUp", "scrollDown", "LArrow","RArrow");
+	   
 	  }
 	   
 	   private ActionListener actionListener = new ActionListener() {
@@ -59,7 +68,7 @@ public class Input {
 	      //Jmonkeyengine time key has been pressed
 	      
 	      if (name.equals("ShootBalls") && !keyPressed) {
-	        gd. shootBall();
+//	        gd. shootBall();
 	      }
 	      
 	      if (name.equals("Run")) {
@@ -70,21 +79,33 @@ public class Input {
 	    	  }
 	      }
 	      
-	      if (name.equals("showMaterial")) {
+	      if (name.equals("LArrow")) {
 	    	  if( keyPressed){
-	    		 gd.changeColorMesh();
+	    		 gd.editor.setMode(gd.editor.getMode()+1);
 	    	  }
 	      }
 	      
-	      if (name.equals("showTriangles")) {
+	      if (name.equals("RArrow")) {
 	    	  if( keyPressed){
-	    		 gd.changeTriangles();
+	    		  gd.editor.setMode(gd.editor.getMode()-1);
 	    	  }
 	      }
 	      
-	      if (name.equals("showQuads")) {
+//	      if (name.equals("showTriangles")) {
+//	    	  if( keyPressed){
+//	    		 gd.changeTriangles();
+//	    	  }
+//	      }
+	      
+	      if (name.equals("scrollUp")) {
 	    	  if( keyPressed){
-	    		 gd.changeQuads();
+	    		 gd.editor.setSize(gd.editor.getSize()+.25f);
+	    	  }
+	      }
+	      
+	      if (name.equals("scrollDown")) {
+	    	  if( keyPressed){
+	    		  gd.editor.setSize(gd.editor.getSize()-.25f);
 	    	  }
 	      }
 	      

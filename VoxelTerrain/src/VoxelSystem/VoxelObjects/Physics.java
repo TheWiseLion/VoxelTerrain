@@ -29,9 +29,9 @@ public class Physics {
 		float sideX, sideY, sideZ;
 		float stepX, stepY, stepZ;
 		
-		float deltaX = Math.abs((1.0f / rayNormal.x));
-		float deltaY = Math.abs((1.0f / rayNormal.y));
-		float deltaZ = Math.abs((1.0f / rayNormal.z));
+		float deltaX = Math.abs((step / rayNormal.x));
+		float deltaY = Math.abs((step / rayNormal.y));
+		float deltaZ = Math.abs((step / rayNormal.z));
 		if(rayNormal.x < 0){
 			stepX = -step; 
 			sideX = (source.x - map.x) * deltaX;
@@ -58,12 +58,12 @@ public class Physics {
 		
 		float dist = 0;
 		do{
-//			List<Triangle> triangles = world.getTrianglesInVoxel((int)map.x, (int)map.y, (int)map.z);
 			int t = world.getType(map.x, map.y, map.z);
-			System.out.println("Q: "+map+" "+t);
+//			System.out.println("Q: "+map+" "+t + " "+dist);
 			if(t != -1){
 				hd.impact = line(source, rayNormal, dist);
 				hd.length = dist;
+				return hd;
             }
 			if(sideX < sideY){
 				if(sideX < sideZ){//do X

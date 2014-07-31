@@ -7,9 +7,9 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 
 public class NoiseShape extends VolumeShape{
-	int dimX = 100;
-	int dimY = 50;
-	int dimZ = 100;
+	int dimX = 50;
+	int dimY = 20;
+	int dimZ = 50;
 	float d;
 	public NoiseShape(float res){
 		this.d = res;
