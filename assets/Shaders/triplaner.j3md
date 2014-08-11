@@ -1,0 +1,27 @@
+MaterialDef Simple {
+   //This is the complete list of user defined uniforms to be used in the
+    //shaders
+      MaterialParameters {
+        Texture2D ColorMap1
+        Texture2D ColorMap2
+    }
+
+    Technique {
+        //This is where the vertex and fragment shader files are
+        //specified
+        LightMode MultiPass
+        VertexShader GLSL110:   Shaders/triplaner.vert
+        FragmentShader GLSL110: Shaders/triplaner.frag
+        //This is where you specify which global uniform you need for your
+        //shaders
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            ViewMatrix
+            CameraPosition
+            WorldMatrix
+        }
+    }
+
+}

@@ -2,3 +2,10 @@
 !*/
 !*.gitignore
 
+!settings.gradle
+!*.frag
+!*.j3md
+!*.vert
+!*.java
+!*.tga
+!*.png
