@@ -2,6 +2,8 @@
 !*/
 !*.gitignore
 
+!gradle.properties
+!build.gradle
 !settings.gradle
 !*.frag
 !*.j3md
