@@ -1,7 +1,7 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
-import VoxelSystem.VoxelSystemTables;
-import VoxelSystem.DensityVolumes.DensityVolume;
+import voxelsystem.VoxelSystemTables;
+import voxelsystem.densityvolumes.DensityVolume;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

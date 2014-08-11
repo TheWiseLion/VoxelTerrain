@@ -1,12 +1,11 @@
-package VoxelSystem;
+package voxelsystem;
+
+import voxelsystem.densityvolumes.shapes.BoxVolume;
+import voxelsystem.densityvolumes.shapes.SphereVolume;
+import voxelsystem.voxeldata.VoxelDensityExtractor;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 import com.jme3.math.Vector3f;
-
-import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
-import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Operators.CSGOperators;
-import VoxelSystem.VoxelData.VoxelDensityExtractor;
-import VoxelSystem.VoxelData.VoxelExtractor;
 
 public class TestCases {
 	public static void main(String [] args){

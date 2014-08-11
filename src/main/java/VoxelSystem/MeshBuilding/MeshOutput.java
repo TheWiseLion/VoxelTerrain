@@ -1,4 +1,4 @@
-package VoxelSystem.MeshBuilding;
+package voxelsystem.meshbuilding;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

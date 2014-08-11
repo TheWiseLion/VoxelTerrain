@@ -1,4 +1,4 @@
-package VoxelSystem.DensityVolumes;
+package voxelsystem.densityvolumes;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

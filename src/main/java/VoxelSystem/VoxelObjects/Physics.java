@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelObjects;
+package voxelsystem.voxelobjects;
 
 
 

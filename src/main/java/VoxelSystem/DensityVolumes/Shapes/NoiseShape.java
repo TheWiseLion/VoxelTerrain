@@ -1,6 +1,6 @@
-package VoxelSystem.DensityVolumes.Shapes;
+package voxelsystem.densityvolumes.shapes;
 
-import VoxelSystem.VoxelNoise.SimplexNoise;
+import voxelsystem.voxelnoise.SimplexNoise;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.FastMath;

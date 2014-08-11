@@ -1,6 +1,6 @@
-package VoxelSystem.Operators;
+package voxelsystem.operators;
 
-import VoxelSystem.VoxelData.VoxelExtractor;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 public interface CSGOperator {
 	public VoxelExtractor operate(VoxelExtractor ... arguements);

@@ -1,4 +1,4 @@
-package VoxelSystem.DensityVolumes.Shapes;
+package voxelsystem.densityvolumes.shapes;
 
 public class CylinderShape {
 

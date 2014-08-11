@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelMaterials;
+package voxelsystem.voxelmaterials;
 
 import com.jme3.material.Material;
 

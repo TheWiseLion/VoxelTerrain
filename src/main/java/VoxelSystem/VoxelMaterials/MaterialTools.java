@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelMaterials;
+package voxelsystem.voxelmaterials;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;

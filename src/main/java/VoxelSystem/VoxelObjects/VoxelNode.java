@@ -1,17 +1,17 @@
-package VoxelSystem.VoxelObjects;
+package voxelsystem.voxelobjects;
 
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import VoxelSystem.VoxelSystemTables;
-import VoxelSystem.VoxelSystemTables.AXIS;
-import VoxelSystem.MeshBuilding.MeshOutput;
-import VoxelSystem.SurfaceExtractors.ExtractorUtils;
-import VoxelSystem.SurfaceExtractors.QuadExtractor;
-import VoxelSystem.VoxelData.Chunk;
-import VoxelSystem.VoxelData.VoxelExtractor;
+import voxelsystem.VoxelSystemTables;
+import voxelsystem.VoxelSystemTables.AXIS;
+import voxelsystem.meshbuilding.MeshOutput;
+import voxelsystem.surfaceextractors.ExtractorUtils;
+import voxelsystem.surfaceextractors.QuadExtractor;
+import voxelsystem.voxeldata.Chunk;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

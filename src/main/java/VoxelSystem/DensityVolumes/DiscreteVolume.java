@@ -1,4 +1,4 @@
-package VoxelSystem.DensityVolumes;
+package voxelsystem.densityvolumes;
 
 public interface DiscreteVolume extends DensityVolume{
 	public void extract(DensityVolume source);

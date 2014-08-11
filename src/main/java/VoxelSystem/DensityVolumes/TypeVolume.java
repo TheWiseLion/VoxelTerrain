@@ -1,4 +1,4 @@
-package VoxelSystem.DensityVolumes;
+package voxelsystem.densityvolumes;
 
 public interface TypeVolume {
 	/***

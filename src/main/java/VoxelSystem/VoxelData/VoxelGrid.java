@@ -1,6 +1,6 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
-import VoxelSystem.VoxelSystemTables.AXIS;
+import voxelsystem.VoxelSystemTables.AXIS;
 
 import com.jme3.math.Vector3f;
 

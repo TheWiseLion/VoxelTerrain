@@ -1,11 +1,11 @@
-package VoxelSystem.DensityVolumes.Shapes;
+package voxelsystem.densityvolumes.shapes;
+
+import voxelsystem.densityvolumes.DensityVolume;
+import voxelsystem.densityvolumes.TypeVolume;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
-
-import VoxelSystem.DensityVolumes.DensityVolume;
-import VoxelSystem.DensityVolumes.TypeVolume;
 
 public abstract class VolumeShape implements DensityVolume{
 	

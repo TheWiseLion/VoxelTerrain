@@ -1,13 +1,13 @@
-package VoxelSystem.SurfaceExtractors;
+package voxelsystem.surfaceextractors;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
-import VoxelSystem.VoxelSystemTables;
-import VoxelSystem.VoxelData.VoxelGrid;
-import VoxelSystem.VoxelSystemTables.AXIS;
-import VoxelSystem.MeshBuilding.SurfacePoint;
+import voxelsystem.VoxelSystemTables;
+import voxelsystem.VoxelSystemTables.AXIS;
+import voxelsystem.meshbuilding.SurfacePoint;
+import voxelsystem.voxeldata.VoxelGrid;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

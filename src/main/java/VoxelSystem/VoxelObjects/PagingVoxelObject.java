@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelObjects;
+package voxelsystem.voxelobjects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,13 +6,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import VoxelSystem.VoxelSystemTables.AXIS;
-import VoxelSystem.MeshBuilding.MeshOutput;
-import VoxelSystem.Operators.CSGOperator;
-import VoxelSystem.VoxelData.ExtractorBase;
-import VoxelSystem.VoxelData.HermiteEdge;
-import VoxelSystem.VoxelData.VoxelExtractor;
-import VoxelSystem.VoxelMaterials.VoxelType;
+import voxelsystem.VoxelSystemTables.AXIS;
+import voxelsystem.meshbuilding.MeshOutput;
+import voxelsystem.operators.CSGOperator;
+import voxelsystem.voxeldata.ExtractorBase;
+import voxelsystem.voxeldata.HermiteEdge;
+import voxelsystem.voxeldata.VoxelExtractor;
+import voxelsystem.voxelmaterials.VoxelType;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;

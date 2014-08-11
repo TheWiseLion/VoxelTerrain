@@ -1,8 +1,8 @@
-package VoxelSystem.VoxelObjects;
+package voxelsystem.voxelobjects;
 
-import VoxelSystem.VoxelData.HermiteEdge;
-import VoxelSystem.VoxelData.VoxelExtractor;
-import VoxelSystem.VoxelSystemTables.AXIS;
+import voxelsystem.VoxelSystemTables.AXIS;
+import voxelsystem.voxeldata.HermiteEdge;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 import com.jme3.math.Vector3f;
 

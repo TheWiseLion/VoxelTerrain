@@ -1,10 +1,10 @@
-package VoxelSystem.SurfaceExtractors;
+package voxelsystem.surfaceextractors;
 
 import java.util.List;
 import java.util.Map;
 
-import VoxelSystem.MeshBuilding.MeshOutput;
-import VoxelSystem.MeshBuilding.SurfacePoint;
+import voxelsystem.meshbuilding.MeshOutput;
+import voxelsystem.meshbuilding.SurfacePoint;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;

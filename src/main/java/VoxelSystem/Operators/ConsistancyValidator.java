@@ -1,12 +1,6 @@
-package VoxelSystem.Operators;
+package voxelsystem.operators;
 
 
-import java.util.Map;
-
-import VoxelSystem.VoxelData.Chunk;
-import VoxelSystem.VoxelData.HermiteEdge;
-
-import com.jme3.math.Vector3f;
 
 /***
  * This helper class that is useful when your making 

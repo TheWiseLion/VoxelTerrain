@@ -1,11 +1,11 @@
-package VoxelSystem.Operators;
+package voxelsystem.operators;
 
-import VoxelSystem.Operators.CSGHelpers.DifferenceExtactor;
-import VoxelSystem.Operators.CSGHelpers.PaintOperator;
-import VoxelSystem.Operators.CSGHelpers.UnionExtactor;
-import VoxelSystem.VoxelData.ExtractorBase;
-import VoxelSystem.VoxelData.HermiteEdge;
-import VoxelSystem.VoxelData.VoxelExtractor;
+import voxelsystem.operators.CSGHelpers.DifferenceExtactor;
+import voxelsystem.operators.CSGHelpers.PaintOperator;
+import voxelsystem.operators.CSGHelpers.UnionExtactor;
+import voxelsystem.voxeldata.ExtractorBase;
+import voxelsystem.voxeldata.HermiteEdge;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

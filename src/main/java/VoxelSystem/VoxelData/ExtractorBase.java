@@ -1,7 +1,7 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
-import VoxelSystem.VoxelSystemTables.AXIS;
-import VoxelSystem.Operators.CSGHelpers;
+import voxelsystem.VoxelSystemTables.AXIS;
+import voxelsystem.operators.CSGHelpers;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

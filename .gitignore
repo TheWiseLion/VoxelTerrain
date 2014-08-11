@@ -12,3 +12,4 @@
 !*.tga
 !*.png
 !*.jar
+/bin/

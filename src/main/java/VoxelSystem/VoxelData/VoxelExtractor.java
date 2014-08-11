@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
 
 import com.jme3.bounding.BoundingBox;

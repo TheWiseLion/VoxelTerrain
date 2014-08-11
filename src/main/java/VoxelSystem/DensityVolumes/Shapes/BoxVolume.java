@@ -1,4 +1,4 @@
-package VoxelSystem.DensityVolumes.Shapes;
+package voxelsystem.densityvolumes.shapes;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

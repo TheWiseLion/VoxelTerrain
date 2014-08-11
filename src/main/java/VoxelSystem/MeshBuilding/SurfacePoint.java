@@ -1,4 +1,4 @@
-package VoxelSystem.MeshBuilding;
+package voxelsystem.meshbuilding;
 
 import com.jme3.math.Vector3f;
 

@@ -1,18 +1,18 @@
-package VoxelSystem;
+package voxelsystem;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import VoxelSystem.DensityVolumes.DensityVolume;
-import VoxelSystem.MeshBuilding.BasicMesher;
-import VoxelSystem.MeshBuilding.SurfacePoint;
-import VoxelSystem.Operators.CSGHelpers;
-import VoxelSystem.SurfaceExtractors.DualContour;
-import VoxelSystem.SurfaceExtractors.SurfaceExtractor;
-import VoxelSystem.VoxelData.VoxelExtractor;
-import VoxelSystem.VoxelData.VoxelGrid;
+import voxelsystem.densityvolumes.DensityVolume;
+import voxelsystem.meshbuilding.BasicMesher;
+import voxelsystem.meshbuilding.SurfacePoint;
+import voxelsystem.operators.CSGHelpers;
+import voxelsystem.surfaceextractors.DualContour;
+import voxelsystem.surfaceextractors.SurfaceExtractor;
+import voxelsystem.voxeldata.VoxelExtractor;
+import voxelsystem.voxeldata.VoxelGrid;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;

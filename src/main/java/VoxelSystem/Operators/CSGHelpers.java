@@ -1,7 +1,7 @@
-package VoxelSystem.Operators;
+package voxelsystem.operators;
 
-import VoxelSystem.VoxelData.HermiteEdge;
-import VoxelSystem.VoxelData.VoxelExtractor;
+import voxelsystem.voxeldata.HermiteEdge;
+import voxelsystem.voxeldata.VoxelExtractor;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

@@ -1,10 +1,9 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import VoxelSystem.Operators.CSGHelpers;
-import VoxelSystem.VoxelSystemTables.AXIS;
+import voxelsystem.VoxelSystemTables.AXIS;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;

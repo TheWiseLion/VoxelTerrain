@@ -1,4 +1,4 @@
-package VoxelSystem.MeshBuilding;
+package voxelsystem.meshbuilding;
 
 import java.util.ArrayList;
 import java.util.HashMap;

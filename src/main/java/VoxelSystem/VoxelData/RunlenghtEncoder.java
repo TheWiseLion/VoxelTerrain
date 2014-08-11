@@ -1,4 +1,4 @@
-package VoxelSystem.VoxelData;
+package voxelsystem.voxeldata;
 
 import java.util.Iterator;
 import java.util.LinkedList;

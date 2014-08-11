@@ -1,10 +1,10 @@
-package VoxelSystem.SurfaceExtractors;
+package voxelsystem.surfaceextractors;
 
 
 import java.util.List;
 
-import VoxelSystem.MeshBuilding.SurfacePoint;
-import VoxelSystem.VoxelData.VoxelGrid;
+import voxelsystem.meshbuilding.SurfacePoint;
+import voxelsystem.voxeldata.VoxelGrid;
 
 public interface SurfaceExtractor {
 	/***

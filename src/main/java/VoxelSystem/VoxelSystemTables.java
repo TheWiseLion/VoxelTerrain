@@ -1,6 +1,6 @@
-package VoxelSystem;
+package voxelsystem;
 
-import VoxelSystem.VoxelData.HermiteCube;
+import voxelsystem.voxeldata.HermiteCube;
 
 import com.jme3.math.Vector3f;
 
