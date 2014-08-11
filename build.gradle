@@ -1,0 +1,79 @@
+import java.text.SimpleDateFormat;
+
+/////////////////git version logic///////////////
+def cmd = "git rev-parse --short HEAD"
+def proc = cmd.execute()
+String gitRevision = proc.text.trim()
+SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss")
+String gitTimestamp = format.format(new Date());
+/////////////////git version logic///////////////
+
+
+apply plugin: 'java'
+sourceCompatibility=JavaVersion.VERSION_1_8
+compileJava.options.encoding = 'UTF-8'
+
+
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+version = "1."+gitTimestamp+"."+ gitRevision
+group = "com.jme3"
+
+
+repositories {
+	mavenCentral()
+
+	maven { url "https://oss.sonatype.org/content/groups/public"}
+}
+
+configurations {
+	provided
+}
+
+
+sourceSets {
+	main {
+		resources.srcDirs = ["src/main/java","src/main/resources","assets"]
+	}
+}
+
+
+sourceSets {
+	main { compileClasspath += configurations.provided }
+	test { compileClasspath += configurations.provided  }
+}
+sourceSets.main.resources.srcDir 'src/main/java'
+
+
+dependencies {
+    provided files(fileTree(dir: 'providedlibs', includes: ['*.jar'])) 
+}
+
+task packageSources(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+}
+
+artifacts {
+	archives(packageSources) {
+		type = 'jar'
+	}
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			repository(url: "$targetRepository/releases") {
+				 authentication(userName: targetRepository_user, password: targetRepository_password)
+			}
+		 }
+	}
+}
+
+eclipse {
+	classpath {
+		plusConfigurations += [configurations.provided]
+		noExportConfigurations += [configurations.provided]
+	}
+}
