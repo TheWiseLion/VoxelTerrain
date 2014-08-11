@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
-import VoxelSystem.VoxelMaterials.VoxelType;
+import voxelsystem.voxelmaterials.VoxelType;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;

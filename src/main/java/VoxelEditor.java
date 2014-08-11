@@ -1,11 +1,11 @@
-import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
-import VoxelSystem.DensityVolumes.Shapes.NoiseSphere;
-import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Operators.CSGOperators;
-import VoxelSystem.VoxelData.VoxelDensityExtractor;
-import VoxelSystem.VoxelObjects.PagingVoxelObject;
-import VoxelSystem.VoxelObjects.Physics;
-import VoxelSystem.VoxelObjects.Physics.HitData;
+import voxelsystem.densityvolumes.shapes.BoxVolume;
+import voxelsystem.densityvolumes.shapes.NoiseSphere;
+import voxelsystem.densityvolumes.shapes.SphereVolume;
+import voxelsystem.operators.CSGOperators;
+import voxelsystem.voxeldata.VoxelDensityExtractor;
+import voxelsystem.voxelobjects.PagingVoxelObject;
+import voxelsystem.voxelobjects.Physics;
+import voxelsystem.voxelobjects.Physics.HitData;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;

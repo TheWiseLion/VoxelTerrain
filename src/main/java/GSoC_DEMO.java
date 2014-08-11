@@ -31,14 +31,15 @@
  */
 
 import java.util.Map;
-import VoxelSystem.DensityVolumes.Shapes.BoxVolume;
-import VoxelSystem.DensityVolumes.Shapes.NoiseShape;
-import VoxelSystem.DensityVolumes.Shapes.SphereVolume;
-import VoxelSystem.Operators.CSGOperators;
-import VoxelSystem.VoxelData.VoxelDensityExtractor;
-import VoxelSystem.VoxelData.VoxelExtractor;
-import VoxelSystem.VoxelMaterials.VoxelType;
-import VoxelSystem.VoxelObjects.PagingVoxelObject;
+
+import voxelsystem.densityvolumes.shapes.BoxVolume;
+import voxelsystem.densityvolumes.shapes.NoiseShape;
+import voxelsystem.densityvolumes.shapes.SphereVolume;
+import voxelsystem.operators.CSGOperators;
+import voxelsystem.voxeldata.VoxelDensityExtractor;
+import voxelsystem.voxeldata.VoxelExtractor;
+import voxelsystem.voxelmaterials.VoxelType;
+import voxelsystem.voxelobjects.PagingVoxelObject;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.ScreenshotAppState;
