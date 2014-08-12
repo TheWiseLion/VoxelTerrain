@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import voxelsystem.VoxelSystemTables.AXIS;
 import voxelsystem.meshbuilding.MeshOutput;
@@ -15,7 +14,6 @@ import voxelsystem.voxeldata.HermiteEdge;
 import voxelsystem.voxeldata.VoxelExtractor;
 import voxelsystem.voxelmaterials.VoxelType;
 
-import com.jme3.app.Application;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
@@ -126,7 +124,7 @@ public class PagingVoxelObject extends ExtractorBase {
 	// // CORE FUNCTIONS ////
 	// ///////////////////////////////////////////////////////////////////////
 	// ///////////////////////////////////////////////////////////////////////
-	public void update(final Application app, final Node root, final int maxWork) {
+	public void update(final Node root, final int maxWork) {
 
 		if (this.renderReadyNodes.size() > 0) {
 			final float error = (float) (Math.sqrt(3) * this.voxelSize / 1000f);
@@ -148,14 +146,7 @@ public class PagingVoxelObject extends ExtractorBase {
 
 				if (vn.generated != null) {
 					for (final Geometry g : vn.generated) {
-						app.enqueue(new Callable<Void>() {
-
-							@Override
-							public Void call() throws Exception {
-								root.detachChild(g);
-								return null;
-							}
-						});
+						root.detachChild(g);
 					}
 				}
 
@@ -172,14 +163,7 @@ public class PagingVoxelObject extends ExtractorBase {
 						g.setMaterial(this.materials.get(i).material);
 						g.setShadowMode(ShadowMode.CastAndReceive);
 						vn.generated.add(g);
-						app.enqueue(new Callable<Void>() {
-
-							@Override
-							public Void call() throws Exception {
-								root.attachChild(g);
-								return null;
-							}
-						});
+						root.attachChild(g);
 					}
 				}
 			}

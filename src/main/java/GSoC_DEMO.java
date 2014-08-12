@@ -117,7 +117,7 @@ public class GSoC_DEMO extends SimpleApplication {
 
 		//
 		this.world.preformOperation(CSGOperators.unionOverwrite, ve.getBoundingBox(), ve);
-		this.world.update(this, this.rootNode, 2500);
+		this.world.update(this.rootNode, 2500);
 
 		this.editor = new VoxelEditor(this.world, this.rootNode, this.assetManager);
 
@@ -161,7 +161,7 @@ public class GSoC_DEMO extends SimpleApplication {
 		this.counter += tpf;
 		this.selectedMaterial = this.selectedMaterial % 6;
 
-		this.world.update(this, this.rootNode, 10);
+		this.world.update(this.rootNode, 10);
 
 		int mod = 0;
 		if (this.input.addDown) {
