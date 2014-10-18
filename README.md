@@ -6,7 +6,7 @@ Voxel Engine for jMonkeyEngine
 Based on [dual contour](http://www1.cse.wustl.edu/~taoju/research/dualContour.pdf). 
 Updating to use **Octree's** and  [Cubical Marching Squares](http://www.ic-at.org/papers/2005/full181.pdf).
 
-Developed summer 2014. 
+Developed: Summer of 2014. 
 
 Language: Java
 
