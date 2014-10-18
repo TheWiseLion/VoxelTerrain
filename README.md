@@ -3,8 +3,8 @@ VoxelTerrain
 
 Voxel Engine for jMonkeyEngine
 
-Based on dual contour [a link](http://www1.cse.wustl.edu/~taoju/research/dualContour.pdf). 
-Updating to use **Octree's** and Cubical Marching Squares [a link](http://www.ic-at.org/papers/2005/full181.pdf).
+Based on [dual contour](http://www1.cse.wustl.edu/~taoju/research/dualContour.pdf). 
+Updating to use **Octree's** and  [Cubical Marching Squares](http://www.ic-at.org/papers/2005/full181.pdf).
 
 Developed summer 2014. 
 
