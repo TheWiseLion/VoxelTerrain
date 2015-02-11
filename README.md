@@ -4,7 +4,11 @@ VoxelTerrain
 Voxel Engine for jMonkeyEngine
 
 Based on [dual contour](http://www1.cse.wustl.edu/~taoju/research/dualContour.pdf). 
-Updating to use **Octree's** and  [Cubical Marching Squares](http://www.ic-at.org/papers/2005/full181.pdf).
+This is a grid based implementation of dual contour. 
+
+Instead of using QR decomposition for calculating isopoint in cube I used Leonardo Augusto Schmitz iterative particle based minimization. My implementation is [here](https://github.com/TheWiseLion/VoxelTerrain/blob/master/src/main/java/voxelsystem/surfaceextractors/ExtractorUtils.java). Details for the algorithm is [here](http://www.inf.ufrgs.br/~comba/papers/thesis/diss-leonardo.pdf) in section 4.2.1 and 4.2.2
+
+
 
 Developed: Summer of 2014. 
 
