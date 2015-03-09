@@ -22,6 +22,7 @@ Language: Java
 ![alt tag](http://i.imgur.com/qDvsWL2.png)
 
 Low Quality Video:
+
 [![Alt text for your video](http://img.youtube.com/vi/RKyqeR4NuGo/0.jpg)](http://www.youtube.com/watch?v=RKyqeR4NuGo)
 
 
