@@ -12,4 +12,7 @@
 !*.tga
 !*.png
 !*.jar
+!*.jpg
+!*.PNG
+!*.dds
 /bin/

@@ -1,0 +1,55 @@
+MaterialDef Simple {
+   //This is the complete list of user defined uniforms to be used in the
+    //shaders
+    MaterialParameters {
+        //Int voxelTypes
+        //IntArray vTD;
+        //IntArray vTN;
+        //IntArray vTS;
+        FloatArray bS //base Scale
+        FloatArray shine
+        
+        //Multi-Scale Sampling
+        FloatArray oS //Other scalar
+        FloatArray hl //Highlight value
+        FloatArray des //Desaturation value
+        
+        //Rotation Technique
+        FloatArray rot // Rotation speed
+        
+        FloatArray minnaertP //minnaertParameter
+        FloatArray minnaertL //hasMinnaert
+        
+        //Float voxelTypeToColorMixing[voxelTypes]
+        // FloatArray typeShininess
+        //IntArray useMinnaert
+        
+        //Color materialColors[voxelTypes]
+        TextureArray materialColors
+        TextureArray materialNormal
+        TextureArray materialSpecular
+        Texture2D noise
+        
+        //Boolean useNormalMap
+    }
+
+    Technique {
+    	LightMode MultiPass
+        
+        VertexShader GLSL150:   Shaders/multimaterial.vert
+        FragmentShader GLSL150: Shaders/multimaterial.frag
+        
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            ViewMatrix
+            CameraPosition
+            WorldMatrix
+        }
+    	
+    }
+    
+  
+    
+}
